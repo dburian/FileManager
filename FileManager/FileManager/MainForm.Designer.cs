@@ -1,6 +1,6 @@
 ﻿namespace FileManager
 {
-	partial class Form1
+	partial class MainForm
 	{
 		/// <summary>
 		/// Required designer variable.
@@ -28,20 +28,38 @@
 		/// </summary>
 		private void InitializeComponent()
 		{
+			this.filesPane1 = new FileManager.FilesPane();
 			this.SuspendLayout();
 			// 
-			// Form1
+			// filesPane1
+			// 
+			this.filesPane1.AutoScroll = true;
+			this.filesPane1.AutoSize = true;
+			this.filesPane1.BackColor = System.Drawing.Color.Silver;
+			this.filesPane1.Dock = System.Windows.Forms.DockStyle.Fill;
+			this.filesPane1.Location = new System.Drawing.Point(0, 0);
+			this.filesPane1.Margin = new System.Windows.Forms.Padding(0);
+			this.filesPane1.MinimumSize = new System.Drawing.Size(330, 0);
+			this.filesPane1.Name = "filesPane1";
+			this.filesPane1.Size = new System.Drawing.Size(666, 570);
+			this.filesPane1.TabIndex = 0;
+			// 
+			// MainForm
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-			this.ClientSize = new System.Drawing.Size(800, 450);
-			this.Name = "Form1";
-			this.Text = "Form1";
+			this.ClientSize = new System.Drawing.Size(666, 570);
+			this.Controls.Add(this.filesPane1);
+			this.Name = "MainForm";
+			this.Text = "File Manager";
 			this.ResumeLayout(false);
+			this.PerformLayout();
 
 		}
 
 		#endregion
+
+		private FilesPane filesPane1;
 	}
 }
 
