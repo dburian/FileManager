@@ -32,6 +32,9 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationManifest>app1.manifest</ApplicationManifest>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -46,11 +49,104 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AbstractEntry.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="AbstractEntry.Designer.cs">
+      <DependentUpon>AbstractEntry.cs</DependentUpon>
+    </Compile>
+    <Compile Include="CommandParser.cs" />
+    <Compile Include="DeleteCommand.cs" />
+    <Compile Include="DeleteCommandFactory.cs" />
+    <Compile Include="FileViewColumns.cs" />
+    <Compile Include="FullScreenCommand.cs" />
+    <Compile Include="FullScreenCommandFactory.cs" />
+    <Compile Include="ICommand.cs" />
+    <Compile Include="CommandPromptPresenter.cs" />
+    <Compile Include="CopyCommand.cs" />
+    <Compile Include="CopyCommandFactory.cs" />
+    <Compile Include="CopyJobEntry.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="DelJobEntry.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="DirectoryEntry.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="DirectoryInfoExtensions.cs" />
+    <Compile Include="ErrorEntry.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="ErrorEntry.Designer.cs">
+      <DependentUpon>ErrorEntry.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ErrorMessage.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="ErrorMessage.Designer.cs">
+      <DependentUpon>ErrorMessage.cs</DependentUpon>
+    </Compile>
     <Compile Include="FileEntry.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="FileEntry.Designer.cs">
-      <DependentUpon>FileEntry.cs</DependentUpon>
+    <Compile Include="FilesPanePresenter.cs" />
+    <Compile Include="ICommandFactory.cs" />
+    <Compile Include="ICommandPrompt.cs" />
+    <Compile Include="IFilesPane.cs" />
+    <Compile Include="CommandPrompt.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="CommandPrompt.Designer.cs">
+      <DependentUpon>CommandPrompt.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Config.cs" />
+    <Compile Include="CopyMoveArgs.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="CopyMoveArgs.Designer.cs">
+      <DependentUpon>CopyMoveArgs.cs</DependentUpon>
+    </Compile>
+    <Compile Include="DelArgs.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="DelArgs.Designer.cs">
+      <DependentUpon>DelArgs.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FileEntryHeader.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="FileEntryHeader.Designer.cs">
+      <DependentUpon>FileEntryHeader.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FileInfoExtensions.cs" />
+    <Compile Include="Format.cs" />
+    <Compile Include="IMainForm.cs" />
+    <Compile Include="IPane.cs" />
+    <Compile Include="IPanePresenter.cs" />
+    <Compile Include="JobEntry.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="JobEntry.Designer.cs">
+      <DependentUpon>JobEntry.cs</DependentUpon>
+    </Compile>
+    <Compile Include="JobEntryHeader.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="JobEntryHeader.Designer.cs">
+      <DependentUpon>JobEntryHeader.cs</DependentUpon>
+    </Compile>
+    <Compile Include="JobsPane.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="JobsPane.Designer.cs">
+      <DependentUpon>JobsPane.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FilesViewEntry.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="FilesViewEntry.Designer.cs">
+      <DependentUpon>FilesViewEntry.cs</DependentUpon>
     </Compile>
     <Compile Include="FilesPane.cs">
       <SubType>UserControl</SubType>
@@ -58,31 +154,87 @@
     <Compile Include="FilesPane.Designer.cs">
       <DependentUpon>FilesPane.cs</DependentUpon>
     </Compile>
+    <Compile Include="JobType.cs" />
+    <Compile Include="LeftCommand.cs" />
+    <Compile Include="LeftRightCommandFactory.cs" />
+    <Compile Include="MoveCommand.cs" />
+    <Compile Include="MoveCommandFactory.cs" />
+    <Compile Include="Panes.cs" />
+    <Compile Include="ProcessKeyPress.cs" />
     <Compile Include="MainForm.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="MainForm.Designer.cs">
       <DependentUpon>MainForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="PaneContainer.cs">
-      <SubType>Component</SubType>
+    <Compile Include="MainFormPresenter.cs" />
+    <Compile Include="MoveJobEntry.cs">
+      <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="PaneContainer.Designer.cs">
-      <DependentUpon>PaneContainer.cs</DependentUpon>
+    <Compile Include="PaneArea.cs" />
+    <Compile Include="ParentDirectoryEntry.cs">
+      <SubType>UserControl</SubType>
     </Compile>
+    <Compile Include="ProcessCommand.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <EmbeddedResource Include="FileEntry.resx">
-      <DependentUpon>FileEntry.cs</DependentUpon>
+    <Compile Include="RegisteredCommands.cs" />
+    <Compile Include="RightCommand.cs" />
+    <Compile Include="SearchArgs.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="SearchArgs.Designer.cs">
+      <DependentUpon>SearchArgs.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SearchCommand.cs" />
+    <Compile Include="SearchCommandFactory.cs" />
+    <Compile Include="SearchJobEntry.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="SortCommand.cs" />
+    <Compile Include="SortCommandFactory.cs" />
+    <Compile Include="UnderlinePanel.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="UnderlinePanel.Designer.cs">
+      <DependentUpon>UnderlinePanel.cs</DependentUpon>
+    </Compile>
+    <Compile Include="UnknownCommand.cs" />
+    <EmbeddedResource Include="CommandPrompt.resx">
+      <DependentUpon>CommandPrompt.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="CopyMoveArgs.resx">
+      <DependentUpon>CopyMoveArgs.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="DelArgs.resx">
+      <DependentUpon>DelArgs.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ErrorEntry.resx">
+      <DependentUpon>ErrorEntry.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ErrorMessage.resx">
+      <DependentUpon>ErrorMessage.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FileEntryHeader.resx">
+      <DependentUpon>FileEntryHeader.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="JobEntry.resx">
+      <DependentUpon>JobEntry.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="JobEntryHeader.resx">
+      <DependentUpon>JobEntryHeader.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="JobsPane.resx">
+      <DependentUpon>JobsPane.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FilesViewEntry.resx">
+      <DependentUpon>FilesViewEntry.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="FilesPane.resx">
       <DependentUpon>FilesPane.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="MainForm.resx">
       <DependentUpon>MainForm.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="PaneContainer.resx">
-      <DependentUpon>PaneContainer.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
@@ -93,6 +245,14 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <EmbeddedResource Include="SearchArgs.resx">
+      <DependentUpon>SearchArgs.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="UnderlinePanel.resx">
+      <DependentUpon>UnderlinePanel.cs</DependentUpon>
+    </EmbeddedResource>
+    <None Include="app.manifest" />
+    <None Include="app1.manifest" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>

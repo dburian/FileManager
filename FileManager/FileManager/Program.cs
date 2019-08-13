@@ -16,7 +16,11 @@ namespace FileManager
 		{
 			Application.EnableVisualStyles();
 			Application.SetCompatibleTextRenderingDefault(false);
-			Application.Run(new MainForm());
+
+			var mf = new MainForm();
+			MainFormPresenter mfPresenter = new MainFormPresenter(mf);
+
+			Application.Run(mf);
 		}
 	}
 }
