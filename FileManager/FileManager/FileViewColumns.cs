@@ -11,7 +11,7 @@ namespace FileManager
 		Name,
 		Extension,
 		Size,
-		DateTimeCreated,
-		DateTimeModified
+		Created,
+		Modified
 	}
 }

@@ -2,20 +2,27 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Diagnostics;
 using System.Threading.Tasks;
 
 namespace FileManager
 {
 	class SortCommandFactory : ICommandFactory
 	{
-		readonly string[] names = new string[] { "sort", "s" };
-
-		bool initialized;
-		SortCommand parsedCmd;
-
-		public ICommand GetCommandInstance() => initialized ? parsedCmd : throw new InvalidOperationException();
-		public bool Parse(string stringInput)
+		readonly string[] names;
+		public SortCommandFactory()
 		{
+			names = new string[] { "sort", "s" };
+		}
+		public SortCommandFactory(string[] cmdNames)
+		{
+			names = cmdNames;
+		}
+
+		public bool Parse(string stringInput, out ICommand parsedCmd)
+		{
+			parsedCmd = null;
+
 			string[] cmd;
 
 			if (!CommandParser.ParseWithStrArgs(stringInput, names, out cmd) || cmd.Length <= 1 || cmd.Length > 3)
@@ -24,45 +31,40 @@ namespace FileManager
 			FilesViewColumns sortBy;
 			if (!Enum.TryParse(cmd[1], true, out sortBy)) return false;
 
-			if (cmd.Length == 2 || cmd[2] == "Asc" || cmd[2] == "asc") parsedCmd = new SortCommand(CreateComparerAscending(sortBy));
-			else if (cmd[2] == "Desc" || cmd[2] == "desc") parsedCmd = new SortCommand(CreateComparerDescending(sortBy));
+			if (cmd.Length == 2 || cmd[2] == "Asc" || cmd[2] == "asc") parsedCmd = new SortCommand(CreateComparisonAscending(sortBy));
+			else if (cmd[2] == "Desc" || cmd[2] == "desc") parsedCmd = new SortCommand(CreateComparisonDescending(sortBy));
 			else return false;
 
-			initialized = true;
 			return true;
 
 		}
 
-		Comparer<FilesViewEntry> CreateComparerAscending(FilesViewColumns column)
-		{
-			return Comparer<FilesViewEntry>.Create(CreateComparisonAscending(column));
-		}
-		Comparer<FilesViewEntry> CreateComparerDescending(FilesViewColumns column)
-		{
-			return Comparer<FilesViewEntry>.Create((x, y) => (-1) * CreateComparisonAscending(column)(x, y));
-		}
-		Comparison<FilesViewEntry> CreateComparisonAscending(FilesViewColumns column)
+		Comparison<FileSystemNodeEntry> CreateComparisonAscending(FilesViewColumns column)
 		{
 			switch (column)
 			{
 				case FilesViewColumns.Name:
-					return (x, y) => String.Compare(x.EntryName, y.Name);
+					return (x, y) => String.Compare(x.EntryName, y.EntryName);
 
 				case FilesViewColumns.Extension:
 					return (x, y) => String.Compare(x.EntryExt, y.EntryExt);
 
 				case FilesViewColumns.Size:
-					return (x, y) => (int)((y.EntrySize - x.EntrySize) / long.MaxValue);
+					return (x, y) => x.EntrySize.CompareTo(y.EntrySize);
 
-				case FilesViewColumns.DateTimeCreated:
+				case FilesViewColumns.Created:
 					return (x, y) => DateTime.Compare(x.EntryCreated, y.EntryCreated);
 
-				case FilesViewColumns.DateTimeModified:
+				case FilesViewColumns.Modified:
 					return (x, y) => DateTime.Compare(x.EntryModified, y.EntryModified);
 
 				default:
 					throw new ArgumentOutOfRangeException();
 			}
+		}
+		Comparison<FileSystemNodeEntry> CreateComparisonDescending(FilesViewColumns column)
+		{
+			return (x, y) => (-1) * CreateComparisonAscending(column)(x, y);
 		}
 	}
 }

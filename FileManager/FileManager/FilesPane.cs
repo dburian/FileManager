@@ -1,4 +1,4 @@
-﻿using System;
+﻿ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
@@ -12,15 +12,17 @@ using System.Diagnostics;
 
 namespace FileManager
 {
-	public partial class FilesPane : UserControl, IFilesPane
+	public partial class FilesPane : 
+		//UserControl,
+		EntriesPane<FileSystemNodeEntry>, 
+		IFilesPane
 	{
 
 		DirectoryInfo _currentDir;
 		int _directoryEntriesCount;
-		List<FilesViewEntry> _entries;
 		int _fileEntriesCount;
-		int _highlightedEntriesCount;
-		long _highlightedEntriesSize;
+		int _selectedEntriesCount;
+		long _selectedEntriesSize;
 		bool _inFocus = false;
 		
 		public FilesPane()
@@ -28,7 +30,7 @@ namespace FileManager
 			InitializeComponent();
 		}
 
-		public bool InFocus
+		public override bool InFocus
 		{
 			get => _inFocus;
 			set
@@ -52,41 +54,32 @@ namespace FileManager
 			set
 			{
 				if (!value.Exists) throw new ArgumentException($"FilesPane.CurrentDir: directory {value.FullName} is invalid.");
-				currentDirectoryLabel.Text = value.FullName;
 
 				_currentDir = value;
-			}
-		}
-		public List<FilesViewEntry> Entries
-		{
-			get => _entries;
-			set
-			{
-				_entries = value;
 
-				UpdateFilesViewPanel();
+				currentDirectoryLabel.Text = _currentDir.FullName;
 			}
 		}
-		public ScrollableControl ScrollPanel { get => filesViewPanel; }
+		public override ScrollableControl ViewPanel { get => filesViewPanel; }
 		public long FreeSpaceInDir
 		{
 			set => freeSpaceLabel.Text = Format.Size(value);
 		}
-		public int HighlightedEntriesCount
+		public int SelectedEntriesCount
 		{
-			get => _highlightedEntriesCount;
+			get => _selectedEntriesCount;
 			set
 			{
-				_highlightedEntriesCount = value;
+				_selectedEntriesCount = value;
 				RefreshHighlightedEntriesLabel();
 			}
 		}
-		public long HighlightedEntriesSize
+		public long SelectedEntriesSize
 		{
-			get => _highlightedEntriesSize;
+			get => _selectedEntriesSize;
 			set
 			{
-				_highlightedEntriesSize = value;
+				_selectedEntriesSize = value;
 				RefreshHighlightedEntriesLabel();
 			}
 		}
@@ -107,28 +100,11 @@ namespace FileManager
 			}
 		}
 
-
-		public void UpdateFilesViewPanel()
-		{
-			filesViewPanel.SuspendLayout();
-			filesViewPanel.Controls.Clear();
-
-			filesViewPanel.Controls.AddRange(Entries.Reverse<FilesViewEntry>().ToArray());
-
-			bool darkStyle = false;
-			for (int i = Entries.Count - 1; i >= 0; i--)
-			{
-				Entries[i].Dock = DockStyle.Top;
-				Entries[i].DarkStyle = darkStyle;
-				darkStyle = !darkStyle;
-			}
-			filesViewPanel.ResumeLayout();
-		}
-		public Control GetControl() => this;
+		public override Control GetControl() => this;
 
 		void RefreshHighlightedEntriesLabel()
 		{
-			highlightedEntriesLabel.Text = $"{_highlightedEntriesCount} hihglighted - {Format.Size(_highlightedEntriesSize)}";
+			highlightedEntriesLabel.Text = $"{_selectedEntriesCount} hihglighted - {Format.Size(_selectedEntriesSize)}";
 		}
 
 		void RefreshNumberOfFilesLabel()

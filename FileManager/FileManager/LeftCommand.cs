@@ -8,11 +8,11 @@ namespace FileManager
 {
 	struct LeftCommand : ICommand
 	{
-		Panes pane;
+		public Panes Pane { get; private set; }
 
 		public LeftCommand(Panes pane)
 		{
-			this.pane = pane;
+			 Pane = pane;
 		}
 	}
 }

@@ -7,5 +7,5 @@ using System.Windows.Forms;
 
 namespace FileManager
 {
-	public delegate bool ProcessKeyPress(char keyChar);
+	public delegate bool ProcessKeyPress(InputKey keyChar);
 }

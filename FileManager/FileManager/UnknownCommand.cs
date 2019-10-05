@@ -8,11 +8,11 @@ namespace FileManager
 {
 	struct UnknownCommand : ICommand
 	{
-		string unknownCmd;
+		public readonly string enteredCommand;
 
 		public UnknownCommand(string unknownCommand)
 		{
-			this.unknownCmd = unknownCommand;
+			this.enteredCommand = unknownCommand;
 		}
 	}
 }

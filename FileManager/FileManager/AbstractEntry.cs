@@ -12,18 +12,28 @@ namespace FileManager
 {
 	public abstract partial class AbstractEntry : UserControl
 	{
+		//bool _darkStyle = false;
+		bool _highlighted;
 		bool _inFocus;
+
+		public AbstractEntry()
+		{
+			InitializeComponent();
+		}
+
 		public virtual bool InFocus
 		{
 			get { return _inFocus; }
 			set
 			{
-				if (value)
+				_inFocus = value;
+				if (_inFocus)
 				{
 					SuspendLayout();
 					BorderStyle = BorderStyle.FixedSingle;
 					Padding = new Padding(0);
 					ResumeLayout();
+					//BackColor = Highlighted ? Config.ColorPalette.HighlightedDark : Config.ColorPalette.Black;
 				}
 				else
 				{
@@ -31,49 +41,44 @@ namespace FileManager
 					BorderStyle = BorderStyle.None;
 					Padding = new Padding(1);
 					ResumeLayout();
+
+					//BackColor = Highlighted ? Config.ColorPalette.HighlightedLight : Config.ColorPalette.White;
 				}
 
-				_inFocus = value;
+				//UpdateBackgroundColor();
 			}
 		}
 
-		bool _highlighted;
 		public virtual bool Highlighted
 		{
 			get { return _highlighted; }
 			set
 			{
-				if (value)
-					BackColor = DarkStyle ? Config.ColorPalette.HighlightedDark : Config.ColorPalette.HighlightedLight;
-				else
-					BackColor = DarkStyle ? Config.ColorPalette.Grey : Config.ColorPalette.White;
-
-				UpdateBackgroundColor();
-
 				_highlighted = value;
-			}
-		}
-
-		bool _darkStyle;
-		public virtual bool DarkStyle
-		{
-			get { return _darkStyle; }
-			set
-			{
-				if (value)
-					BackColor = Highlighted ? Config.ColorPalette.HighlightedDark : Config.ColorPalette.Grey;
+				if (_highlighted)
+					BackColor = Config.ColorPalette.HighlightedLight; //DarkStyle ? Config.ColorPalette.HighlightedDark : 
 				else
-					BackColor = Highlighted ? Config.ColorPalette.HighlightedLight : Config.ColorPalette.White;
+					BackColor = Config.ColorPalette.White; // DarkStyle ? Config.ColorPalette.Grey : 
 
 				UpdateBackgroundColor();
-
-				_darkStyle = value;
 			}
 		}
-		public AbstractEntry()
-		{
-			InitializeComponent();
-		}
+
+		//public virtual bool DarkStyle
+		//{
+		//	get { return _darkStyle; }
+		//	set
+		//	{
+		//		//if (value)
+		//		//	BackColor = Highlighted ? Config.ColorPalette.HighlightedDark : Config.ColorPalette.Grey;
+		//		//else
+		//		//	BackColor = Highlighted ? Config.ColorPalette.HighlightedLight : Config.ColorPalette.White;
+
+		//		//UpdateBackgroundColor();
+
+		//		//_darkStyle = value;
+		//	}
+		//}
 
 		protected abstract void UpdateBackgroundColor();
 	}

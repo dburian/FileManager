@@ -1,15 +1,16 @@
 ﻿using System;
 using System.IO;
+using HelperExtensionLibrary;
 
 namespace FileManager
 {
-	public class DirectoryEntry : FilesViewEntry
+	public class DirectoryEntry : FileSystemNodeEntry
 	{
 		protected internal DirectoryInfo _info;
 
-		public override string EntryName { get => _info.GetOnlyName(); }
+		public override string EntryName { get => _info.GetFormattedName(); }
 		public override string EntryExt { get => ""; }
-		public override long EntrySize { get => -1; }
+		public override long EntrySize { get => 0; }
 		public override DateTime EntryCreated { get => _info.CreationTime; }
 		public override DateTime EntryModified { get => _info.LastWriteTime; }
 		public override FileSystemInfo Info
@@ -27,7 +28,6 @@ namespace FileManager
 
 		public virtual void Initialize()
 		{
-			//TODO: Maybe add "..." when name does not fit
 			nameLabel.Text = EntryName;
 			typeLabel.Text = EntryExt;
 			sizeLabel.Text = "Dir";

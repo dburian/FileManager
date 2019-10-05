@@ -8,7 +8,6 @@ namespace FileManager
 {
 	interface ICommandFactory
 	{
-		ICommand GetCommandInstance();
-		bool Parse(string stringInput);
+		bool Parse(string stringInput, out ICommand parsedCmd);
 	}
 }

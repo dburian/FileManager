@@ -7,10 +7,12 @@ using System.Windows.Forms;
 
 namespace FileManager
 {
-	interface IPanePresenter
+	interface IPanePresenter : IDisposable
 	{
 		Control GetViewsControl();
 		void SetFocusOnView(bool inFocus);
-		bool ProcessKeyPress(char keyChar);
+		bool ProcessKeyPress(InputKey pressedKey);
+
+		event ProcessCommandDelegate ProcessComand;
 	}
 }

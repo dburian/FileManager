@@ -8,19 +8,25 @@ namespace FileManager
 {
 	class FullScreenCommandFactory : ICommandFactory
 	{
-		readonly string[] names = new string[] { "fullscreen", "fs" };
+		readonly string[] names;
 
-		bool initialized = false;
-		FullScreenCommand parsedCmd;
-
-		public ICommand GetCommandInstance() => initialized ? parsedCmd : throw new InvalidOperationException();
-
-		public bool Parse(string stringInput)
+		public FullScreenCommandFactory()
 		{
-			if(CommandParser.ParseWithoutArgs(stringInput, names))
+			names = new string[] { "fullscreen", "fs" };
+		}
+
+		public FullScreenCommandFactory(string[] cmdNames)
+		{
+			names = cmdNames;
+		}
+
+		public bool Parse(string stringInput, out ICommand parsedCmd)
+		{
+			parsedCmd = null;
+
+			if (CommandParser.ParseWithoutArgs(stringInput, names))
 			{
 				parsedCmd = new FullScreenCommand();
-				initialized = true;
 				return true;
 			}
 

@@ -8,18 +8,24 @@ namespace FileManager
 {
 	class DeleteCommandFactory : ICommandFactory
 	{
-		readonly string[] names = new string[] { "delete", "d" };
+		readonly string[] names;
 
-		bool initialized = false;
-		DeleteCommand parsedCmd;
-
-		public ICommand GetCommandInstance() => initialized ? parsedCmd : throw new InvalidOperationException();
-		public bool Parse(string stringInput)
+		public DeleteCommandFactory()
 		{
-			if (CommandParser.ParseWithoutArgs(stringInput, names))
+			this.names = new string[] { "delete", "d" };
+		}
+		public DeleteCommandFactory(string[] cmdNames)
+		{
+			names = cmdNames;
+		}
+
+		public bool Parse(string stringInput, out ICommand parsedCmd)
+		{
+			parsedCmd = null;
+			string[] cmd;
+			if (CommandParser.ParseWithStrArgs(stringInput, names, out cmd) && cmd.Length <= 2)
 			{
-				initialized = true;
-				parsedCmd = new DeleteCommand();
+				parsedCmd = cmd.Length == 1 ? new DeleteCommand() : new DeleteCommand(cmd[1]);
 				return true;
 			}
 

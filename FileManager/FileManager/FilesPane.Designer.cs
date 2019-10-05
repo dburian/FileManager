@@ -55,7 +55,7 @@
 			this.mainPanel.Font = new System.Drawing.Font("Consolas", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
 			this.mainPanel.Location = new System.Drawing.Point(5, 5);
 			this.mainPanel.Name = "mainPanel";
-			this.mainPanel.Size = new System.Drawing.Size(395, 218);
+			this.mainPanel.Size = new System.Drawing.Size(395, 450);
 			this.mainPanel.TabIndex = 0;
 			// 
 			// filesViewPanel
@@ -65,7 +65,7 @@
 			this.filesViewPanel.Location = new System.Drawing.Point(0, 62);
 			this.filesViewPanel.Margin = new System.Windows.Forms.Padding(0);
 			this.filesViewPanel.Name = "filesViewPanel";
-			this.filesViewPanel.Size = new System.Drawing.Size(395, 122);
+			this.filesViewPanel.Size = new System.Drawing.Size(395, 354);
 			this.filesViewPanel.TabIndex = 8;
 			// 
 			// underlinePanel1
@@ -97,7 +97,7 @@
 			this.bottomPanel.Controls.Add(this.bottomInnerTablePanel);
 			this.bottomPanel.Dock = System.Windows.Forms.DockStyle.Bottom;
 			this.bottomPanel.Font = new System.Drawing.Font("Consolas", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-			this.bottomPanel.Location = new System.Drawing.Point(0, 184);
+			this.bottomPanel.Location = new System.Drawing.Point(0, 416);
 			this.bottomPanel.Name = "bottomPanel";
 			this.bottomPanel.Size = new System.Drawing.Size(395, 34);
 			this.bottomPanel.TabIndex = 5;
@@ -184,7 +184,7 @@
 			this.MinimumSize = new System.Drawing.Size(405, 0);
 			this.Name = "FilesPane";
 			this.Padding = new System.Windows.Forms.Padding(5);
-			this.Size = new System.Drawing.Size(405, 228);
+			this.Size = new System.Drawing.Size(405, 460);
 			this.mainPanel.ResumeLayout(false);
 			this.mainPanel.PerformLayout();
 			this.bottomPanel.ResumeLayout(false);
@@ -202,8 +202,8 @@
 		private System.Windows.Forms.Label numberOfFilesLabel;
 		private System.Windows.Forms.Label highlightedEntriesLabel;
 		private System.Windows.Forms.Label freeSpaceLabel;
-		private System.Windows.Forms.Panel filesViewPanel;
 		private UnderlinePanel underlinePanel1;
 		private FileEntryHeader fileEntryHeader1;
+		private System.Windows.Forms.Panel filesViewPanel;
 	}
 }

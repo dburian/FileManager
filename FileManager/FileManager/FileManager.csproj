@@ -1,5 +1,10 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\packages\Microsoft.CodeAnalysis.FxCopAnalyzers.2.9.6\build\Microsoft.CodeAnalysis.FxCopAnalyzers.props" Condition="Exists('..\packages\Microsoft.CodeAnalysis.FxCopAnalyzers.2.9.6\build\Microsoft.CodeAnalysis.FxCopAnalyzers.props')" />
+  <Import Project="..\packages\Microsoft.NetFramework.Analyzers.2.9.6\build\Microsoft.NetFramework.Analyzers.props" Condition="Exists('..\packages\Microsoft.NetFramework.Analyzers.2.9.6\build\Microsoft.NetFramework.Analyzers.props')" />
+  <Import Project="..\packages\Microsoft.NetCore.Analyzers.2.9.6\build\Microsoft.NetCore.Analyzers.props" Condition="Exists('..\packages\Microsoft.NetCore.Analyzers.2.9.6\build\Microsoft.NetCore.Analyzers.props')" />
+  <Import Project="..\packages\Microsoft.CodeQuality.Analyzers.2.9.6\build\Microsoft.CodeQuality.Analyzers.props" Condition="Exists('..\packages\Microsoft.CodeQuality.Analyzers.2.9.6\build\Microsoft.CodeQuality.Analyzers.props')" />
+  <Import Project="..\packages\Microsoft.CodeAnalysis.VersionCheckAnalyzer.2.9.6\build\Microsoft.CodeAnalysis.VersionCheckAnalyzer.props" Condition="Exists('..\packages\Microsoft.CodeAnalysis.VersionCheckAnalyzer.2.9.6\build\Microsoft.CodeAnalysis.VersionCheckAnalyzer.props')" />
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -8,10 +13,28 @@
     <OutputType>WinExe</OutputType>
     <RootNamespace>FileManager</RootNamespace>
     <AssemblyName>FileManager</AssemblyName>
-    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <Deterministic>true</Deterministic>
+    <TargetFrameworkProfile />
+    <PublishUrl>publish\</PublishUrl>
+    <Install>true</Install>
+    <InstallFrom>Disk</InstallFrom>
+    <UpdateEnabled>false</UpdateEnabled>
+    <UpdateMode>Foreground</UpdateMode>
+    <UpdateInterval>7</UpdateInterval>
+    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
+    <UpdatePeriodically>false</UpdatePeriodically>
+    <UpdateRequired>false</UpdateRequired>
+    <MapFileExtensions>true</MapFileExtensions>
+    <ApplicationRevision>0</ApplicationRevision>
+    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
+    <IsWebBootstrapper>false</IsWebBootstrapper>
+    <UseApplicationTrust>false</UseApplicationTrust>
+    <BootstrapperEnabled>true</BootstrapperEnabled>
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -32,8 +55,9 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <PropertyGroup />
   <PropertyGroup>
-    <ApplicationManifest>app1.manifest</ApplicationManifest>
+    <StartupObject>FileManager.Program</StartupObject>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -55,26 +79,38 @@
     <Compile Include="AbstractEntry.Designer.cs">
       <DependentUpon>AbstractEntry.cs</DependentUpon>
     </Compile>
+    <Compile Include="BothPanesNeedToBeFilesPaneException.cs" />
+    <Compile Include="ChangeDirectoryCommand.cs" />
+    <Compile Include="ChangeDirectoryCommandFactory.cs" />
     <Compile Include="CommandParser.cs" />
+    <Compile Include="CopyCommandFactory.cs" />
+    <Compile Include="TransferDirectoryIntoFileException.cs" />
     <Compile Include="DeleteCommand.cs" />
     <Compile Include="DeleteCommandFactory.cs" />
+    <Compile Include="EntriesHolder.cs" />
+    <Compile Include="FileEntry.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="SortedEntriesHolder.cs" />
+    <Compile Include="ErrorForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ErrorForm.Designer.cs">
+      <DependentUpon>ErrorForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ErrorFormFactory.cs" />
+    <Compile Include="ErrorFormPresenter.cs" />
+    <Compile Include="FileOrDirectoryNotFound.cs" />
+    <Compile Include="FilesPaneWasNotActiveException.cs" />
     <Compile Include="FileViewColumns.cs" />
     <Compile Include="FullScreenCommand.cs" />
     <Compile Include="FullScreenCommandFactory.cs" />
     <Compile Include="ICommand.cs" />
     <Compile Include="CommandPromptPresenter.cs" />
     <Compile Include="CopyCommand.cs" />
-    <Compile Include="CopyCommandFactory.cs" />
-    <Compile Include="CopyJobEntry.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="DelJobEntry.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
     <Compile Include="DirectoryEntry.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="DirectoryInfoExtensions.cs" />
     <Compile Include="ErrorEntry.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -87,12 +123,15 @@
     <Compile Include="ErrorMessage.Designer.cs">
       <DependentUpon>ErrorMessage.cs</DependentUpon>
     </Compile>
-    <Compile Include="FileEntry.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
     <Compile Include="FilesPanePresenter.cs" />
+    <Compile Include="ICommandException.cs" />
     <Compile Include="ICommandFactory.cs" />
     <Compile Include="ICommandPrompt.cs" />
+    <Compile Include="EntriesPane.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="IErrorForm.cs" />
+    <Compile Include="IErrorMessage.cs" />
     <Compile Include="IFilesPane.cs" />
     <Compile Include="CommandPrompt.cs">
       <SubType>UserControl</SubType>
@@ -101,17 +140,17 @@
       <DependentUpon>CommandPrompt.cs</DependentUpon>
     </Compile>
     <Compile Include="Config.cs" />
-    <Compile Include="CopyMoveArgs.cs">
+    <Compile Include="CopyMoveArgsView.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="CopyMoveArgs.Designer.cs">
-      <DependentUpon>CopyMoveArgs.cs</DependentUpon>
+    <Compile Include="CopyMoveArgsView.Designer.cs">
+      <DependentUpon>CopyMoveArgsView.cs</DependentUpon>
     </Compile>
-    <Compile Include="DelArgs.cs">
+    <Compile Include="DelArgsView.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="DelArgs.Designer.cs">
-      <DependentUpon>DelArgs.cs</DependentUpon>
+    <Compile Include="DelArgsView.Designer.cs">
+      <DependentUpon>DelArgsView.cs</DependentUpon>
     </Compile>
     <Compile Include="FileEntryHeader.cs">
       <SubType>UserControl</SubType>
@@ -119,11 +158,14 @@
     <Compile Include="FileEntryHeader.Designer.cs">
       <DependentUpon>FileEntryHeader.cs</DependentUpon>
     </Compile>
-    <Compile Include="FileInfoExtensions.cs" />
     <Compile Include="Format.cs" />
+    <Compile Include="IJobArgsView.cs" />
+    <Compile Include="IJobsPane.cs" />
     <Compile Include="IMainForm.cs" />
+    <Compile Include="InputKey.cs" />
     <Compile Include="IPane.cs" />
     <Compile Include="IPanePresenter.cs" />
+    <Compile Include="ISearchResultPane.cs" />
     <Compile Include="JobEntry.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -142,11 +184,11 @@
     <Compile Include="JobsPane.Designer.cs">
       <DependentUpon>JobsPane.cs</DependentUpon>
     </Compile>
-    <Compile Include="FilesViewEntry.cs">
+    <Compile Include="FileSystemNodeEntry.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="FilesViewEntry.Designer.cs">
-      <DependentUpon>FilesViewEntry.cs</DependentUpon>
+    <Compile Include="FileSystemNodeEntry.Designer.cs">
+      <DependentUpon>FileSystemNodeEntry.cs</DependentUpon>
     </Compile>
     <Compile Include="FilesPane.cs">
       <SubType>UserControl</SubType>
@@ -154,7 +196,8 @@
     <Compile Include="FilesPane.Designer.cs">
       <DependentUpon>FilesPane.cs</DependentUpon>
     </Compile>
-    <Compile Include="JobType.cs" />
+    <Compile Include="JobsPanePresenter.cs" />
+    <Compile Include="JobStatus.cs" />
     <Compile Include="LeftCommand.cs" />
     <Compile Include="LeftRightCommandFactory.cs" />
     <Compile Include="MoveCommand.cs" />
@@ -168,29 +211,31 @@
       <DependentUpon>MainForm.cs</DependentUpon>
     </Compile>
     <Compile Include="MainFormPresenter.cs" />
-    <Compile Include="MoveJobEntry.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
     <Compile Include="PaneArea.cs" />
     <Compile Include="ParentDirectoryEntry.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="ProcessCommand.cs" />
+    <Compile Include="ProcessCommandDelegate.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RegisteredCommands.cs" />
     <Compile Include="RightCommand.cs" />
-    <Compile Include="SearchArgs.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="SearchArgs.Designer.cs">
-      <DependentUpon>SearchArgs.cs</DependentUpon>
-    </Compile>
     <Compile Include="SearchCommand.cs" />
     <Compile Include="SearchCommandFactory.cs" />
-    <Compile Include="SearchJobEntry.cs">
+    <Compile Include="SearchedDirectoryDoesNotExist.cs" />
+    <Compile Include="SearchResultDirectoryEntry.cs">
       <SubType>UserControl</SubType>
     </Compile>
+    <Compile Include="SearchResultFileEntry.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="SearchResultPane.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="SearchResultPane.Designer.cs">
+      <DependentUpon>SearchResultPane.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SearchResultPanePresenter.cs" />
     <Compile Include="SortCommand.cs" />
     <Compile Include="SortCommandFactory.cs" />
     <Compile Include="UnderlinePanel.cs">
@@ -200,17 +245,25 @@
       <DependentUpon>UnderlinePanel.cs</DependentUpon>
     </Compile>
     <Compile Include="UnknownCommand.cs" />
+    <Compile Include="UnknownCommandException.cs" />
+    <Compile Include="UnsortedEntriesHolder.cs" />
+    <EmbeddedResource Include="AbstractEntry.resx">
+      <DependentUpon>AbstractEntry.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="CommandPrompt.resx">
       <DependentUpon>CommandPrompt.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="CopyMoveArgs.resx">
-      <DependentUpon>CopyMoveArgs.cs</DependentUpon>
+    <EmbeddedResource Include="CopyMoveArgsView.resx">
+      <DependentUpon>CopyMoveArgsView.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="DelArgs.resx">
-      <DependentUpon>DelArgs.cs</DependentUpon>
+    <EmbeddedResource Include="DelArgsView.resx">
+      <DependentUpon>DelArgsView.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="ErrorEntry.resx">
       <DependentUpon>ErrorEntry.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ErrorForm.resx">
+      <DependentUpon>ErrorForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="ErrorMessage.resx">
       <DependentUpon>ErrorMessage.cs</DependentUpon>
@@ -227,14 +280,17 @@
     <EmbeddedResource Include="JobsPane.resx">
       <DependentUpon>JobsPane.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="FilesViewEntry.resx">
-      <DependentUpon>FilesViewEntry.cs</DependentUpon>
+    <EmbeddedResource Include="FileSystemNodeEntry.resx">
+      <DependentUpon>FileSystemNodeEntry.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="FilesPane.resx">
       <DependentUpon>FilesPane.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="MainForm.resx">
       <DependentUpon>MainForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ParentDirectoryEntry.resx">
+      <DependentUpon>ParentDirectoryEntry.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
@@ -244,15 +300,16 @@
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
     </Compile>
-    <EmbeddedResource Include="SearchArgs.resx">
-      <DependentUpon>SearchArgs.cs</DependentUpon>
+    <EmbeddedResource Include="SearchResultPane.resx">
+      <DependentUpon>SearchResultPane.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="UnderlinePanel.resx">
       <DependentUpon>UnderlinePanel.cs</DependentUpon>
     </EmbeddedResource>
     <None Include="app.manifest" />
-    <None Include="app1.manifest" />
+    <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -266,5 +323,48 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\FileSystemExtensionLibrary\HelperExtensionLibrary.csproj">
+      <Project>{19db1685-535a-4af0-8454-c3c275536638}</Project>
+      <Name>HelperExtensionLibrary</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\MultithreadedFileOperations\MultithreadedFileOperations.csproj">
+      <Project>{747eed83-bc63-49f8-a04b-9ff3c5633914}</Project>
+      <Name>MultithreadedFileOperations</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <BootstrapperPackage Include=".NETFramework,Version=v4.6.1">
+      <Visible>False</Visible>
+      <ProductName>Microsoft .NET Framework 4.6.1 %28x86 and x64%29</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup>
+    <Analyzer Include="..\packages\Microsoft.CodeAnalysis.VersionCheckAnalyzer.2.9.6\analyzers\dotnet\cs\Microsoft.CodeAnalysis.VersionCheckAnalyzer.resources.dll" />
+    <Analyzer Include="..\packages\Microsoft.CodeAnalysis.VersionCheckAnalyzer.2.9.6\analyzers\dotnet\Microsoft.CodeAnalysis.VersionCheckAnalyzer.dll" />
+    <Analyzer Include="..\packages\Microsoft.CodeQuality.Analyzers.2.9.6\analyzers\dotnet\cs\Humanizer.dll" />
+    <Analyzer Include="..\packages\Microsoft.CodeQuality.Analyzers.2.9.6\analyzers\dotnet\cs\Microsoft.CodeQuality.Analyzers.dll" />
+    <Analyzer Include="..\packages\Microsoft.CodeQuality.Analyzers.2.9.6\analyzers\dotnet\cs\Microsoft.CodeQuality.CSharp.Analyzers.dll" />
+    <Analyzer Include="..\packages\Microsoft.NetCore.Analyzers.2.9.6\analyzers\dotnet\cs\Microsoft.NetCore.Analyzers.dll" />
+    <Analyzer Include="..\packages\Microsoft.NetCore.Analyzers.2.9.6\analyzers\dotnet\cs\Microsoft.NetCore.CSharp.Analyzers.dll" />
+    <Analyzer Include="..\packages\Microsoft.NetFramework.Analyzers.2.9.6\analyzers\dotnet\cs\Microsoft.NetFramework.Analyzers.dll" />
+    <Analyzer Include="..\packages\Microsoft.NetFramework.Analyzers.2.9.6\analyzers\dotnet\cs\Microsoft.NetFramework.CSharp.Analyzers.dll" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\packages\Microsoft.CodeAnalysis.VersionCheckAnalyzer.2.9.6\build\Microsoft.CodeAnalysis.VersionCheckAnalyzer.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.CodeAnalysis.VersionCheckAnalyzer.2.9.6\build\Microsoft.CodeAnalysis.VersionCheckAnalyzer.props'))" />
+    <Error Condition="!Exists('..\packages\Microsoft.CodeQuality.Analyzers.2.9.6\build\Microsoft.CodeQuality.Analyzers.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.CodeQuality.Analyzers.2.9.6\build\Microsoft.CodeQuality.Analyzers.props'))" />
+    <Error Condition="!Exists('..\packages\Microsoft.NetCore.Analyzers.2.9.6\build\Microsoft.NetCore.Analyzers.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.NetCore.Analyzers.2.9.6\build\Microsoft.NetCore.Analyzers.props'))" />
+    <Error Condition="!Exists('..\packages\Microsoft.NetFramework.Analyzers.2.9.6\build\Microsoft.NetFramework.Analyzers.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.NetFramework.Analyzers.2.9.6\build\Microsoft.NetFramework.Analyzers.props'))" />
+    <Error Condition="!Exists('..\packages\Microsoft.CodeAnalysis.FxCopAnalyzers.2.9.6\build\Microsoft.CodeAnalysis.FxCopAnalyzers.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.CodeAnalysis.FxCopAnalyzers.2.9.6\build\Microsoft.CodeAnalysis.FxCopAnalyzers.props'))" />
+  </Target>
 </Project>

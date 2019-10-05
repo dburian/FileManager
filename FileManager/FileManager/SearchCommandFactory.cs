@@ -8,19 +8,24 @@ namespace FileManager
 {
 	class SearchCommandFactory : ICommandFactory
 	{
-		readonly string[] names = new string[] { "search", "/" };
+		readonly string[] names;
 
-
-		bool initialized = false;
-		SearchCommand parsedCmd;
-
-		public ICommand GetCommandInstance() => initialized ? parsedCmd : throw new InvalidOperationException();
-		public bool Parse(string stringInput)
+		public SearchCommandFactory()
 		{
+			names = new string[] { "search", "/" };
+		}
+		public SearchCommandFactory(string[] cmdNames)
+		{
+			names = cmdNames;
+		}
+
+		public bool Parse(string stringInput, out ICommand parsedCmd)
+		{
+			parsedCmd = null;
+
 			string[] cmd;
 			if (CommandParser.ParseWithStrArgs(stringInput, names, out cmd) && cmd.Length > 1 && cmd.Length <= 3)
 			{
-				initialized = true;
 				parsedCmd = cmd.Length == 2 ? new SearchCommand(cmd[1]) : new SearchCommand(cmd[1], cmd[2]);
 				return true;
 			}

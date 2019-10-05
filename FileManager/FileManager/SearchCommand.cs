@@ -9,15 +9,15 @@ namespace FileManager
 {
 	struct SearchCommand : ICommand
 	{
-		readonly string searchedName;
-
-		string pathToSearchedTree;
 
 		public SearchCommand(string searchedName, string pathToSearchedTree)
 		{
-			this.searchedName = searchedName;
-			this.pathToSearchedTree = pathToSearchedTree;
+			SearchedName = searchedName;
+			SearchedDirectory = pathToSearchedTree;
 		}
 		public SearchCommand(string searchedName) : this(searchedName, ".") { }
+
+		public string SearchedName { get; }
+		public string SearchedDirectory { get; }
 	}
 }

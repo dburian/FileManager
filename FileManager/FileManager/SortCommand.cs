@@ -8,10 +8,10 @@ namespace FileManager
 {
 	struct SortCommand : ICommand
 	{
-		Comparer<FilesViewEntry> comparer;
-		public SortCommand(Comparer<FilesViewEntry> comparer)
+		public Comparison<FileSystemNodeEntry> Comparer { get; private set; }
+		public SortCommand(Comparison<FileSystemNodeEntry> comparer)
 		{
-			this.comparer = comparer;
+			this.Comparer = comparer;
 		}
 	}
 }

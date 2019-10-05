@@ -2,8 +2,6 @@
 {
 	public sealed class ParentDirectoryEntry : DirectoryEntry
 	{
-		public override bool Highlighted { get => false; set { } }
-
 		public override void Initialize()
 		{
 			nameLabel.Text = "..";
@@ -11,6 +9,18 @@
 			sizeLabel.Text = "Dir";
 			dateTimeAddedLabel.Text = Format.DateAndTime(EntryCreated);
 			dateTimeLastModifiedLabel.Text = Format.DateAndTime(EntryModified);
+		}
+
+		private void InitializeComponent()
+		{
+			this.SuspendLayout();
+			// 
+			// ParentDirectoryEntry
+			// 
+			this.Name = "ParentDirectoryEntry";
+			this.Size = new System.Drawing.Size(732, 18);
+			this.ResumeLayout(false);
+
 		}
 	}
 }

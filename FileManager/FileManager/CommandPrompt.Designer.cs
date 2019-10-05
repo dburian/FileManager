@@ -49,7 +49,7 @@
 			// 
 			this.commandLabel.BackColor = System.Drawing.Color.White;
 			this.commandLabel.Dock = System.Windows.Forms.DockStyle.Fill;
-			this.commandLabel.Font = new System.Drawing.Font("Consolas", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
+			this.commandLabel.Font = new System.Drawing.Font("Consolas", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
 			this.commandLabel.Location = new System.Drawing.Point(20, 8);
 			this.commandLabel.Margin = new System.Windows.Forms.Padding(0);
 			this.commandLabel.Name = "commandLabel";

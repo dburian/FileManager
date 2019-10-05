@@ -18,7 +18,8 @@ namespace FileManager
 				new SearchCommandFactory(),
 				new SortCommandFactory(),
 				new LeftRightCommandFactory(),
-				new FullScreenCommandFactory()
+				new FullScreenCommandFactory(),
+				new ChangeDirectoryCommandFactory(),
 			};
 		}
 

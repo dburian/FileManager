@@ -10,7 +10,6 @@ namespace FileManager
 	public interface IPane
 	{
 		bool InFocus { get; set; }
-		ScrollableControl ScrollPanel { get; }
 		Control GetControl();
 	}
 }

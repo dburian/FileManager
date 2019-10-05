@@ -8,22 +8,29 @@ namespace FileManager
 {
 	class CopyCommandFactory : ICommandFactory
 	{
-		readonly string[] names = new string[] { "copy", "cp", "yank", "y" };
+		readonly string[] names;
 
-		bool initialized = false;
-		CopyCommand parsedCmd;
-
-		public ICommand GetCommandInstance() => initialized ? parsedCmd : throw new InvalidOperationException();
-		public bool Parse(string stringInput)
+		public CopyCommandFactory()
 		{
-			if (CommandParser.ParseWithoutArgs(stringInput, names))
+			this.names = new string[] { "copy", "cp", "yank", "y" };
+		}
+		public CopyCommandFactory(string[] cmdNames)
+		{
+			this.names = cmdNames;
+		}
+
+		public bool Parse(string stringInput, out ICommand parsedCmd)
+		{
+			parsedCmd = null;
+			string[] cmd;
+			if (CommandParser.ParseWithStrArgs(stringInput, names, out cmd) && cmd.Length <= 2)
 			{
-				initialized = true;
-				parsedCmd = new CopyCommand();
+				parsedCmd = cmd.Length == 1 ? new CopyCommand() : new CopyCommand(cmd[1]);
 				return true;
 			}
 
 			return false;
 		}
 	}
+
 }

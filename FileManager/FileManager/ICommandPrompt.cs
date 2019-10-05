@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Drawing;
 
 namespace FileManager
 {
@@ -10,5 +11,8 @@ namespace FileManager
 	{
 		string Command { get; set; }
 		bool InFocus { get; set; }
+
+		Font Font { get; }
+		int Width { get; }
 	}
 }

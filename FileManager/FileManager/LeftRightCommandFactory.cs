@@ -8,25 +8,31 @@ namespace FileManager
 {
 	class LeftRightCommandFactory : ICommandFactory
 	{
-		readonly string[] names = new string[] { "left", "right" };
+		readonly string[] names;
 
-		bool initialized = false;
-		ICommand parsedCmd;
-
-		public ICommand GetCommandInstance() => initialized ? parsedCmd : throw new InvalidOperationException();
-		public bool Parse(string stringInput)
+		public LeftRightCommandFactory()
 		{
+			names = new string[] { "left", "right" };
+		}
+		public LeftRightCommandFactory(string[] cmdNames)
+		{
+			names = cmdNames;
+		}
+
+		public bool Parse(string stringInput, out ICommand parsedCmd)
+		{
+			parsedCmd = null;
+
 			string[] cmd;
 			if (!CommandParser.ParseWithStrArgs(stringInput, names, out cmd) || cmd.Length <= 1 || cmd.Length > 2)
 				return false;
 
 			Panes pane;
-			if (!Enum.TryParse(cmd[1], out pane)) return false;
+			if (!Enum.TryParse(cmd[1], true, out pane)) return false;
 
 			if (cmd[0] == "left") parsedCmd = new LeftCommand(pane);
 			else parsedCmd = new RightCommand(pane);
 
-			initialized = true;
 			return true;
 		}
 	}

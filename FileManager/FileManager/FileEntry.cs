@@ -1,9 +1,11 @@
 ﻿using System;
 using System.IO;
+using HelperExtensionLibrary;
 
 namespace FileManager
 {
-	public sealed class FileEntry : FilesViewEntry
+	//TODO: #cleanup - seal classes (not this one)
+	public class FileEntry : FileSystemNodeEntry
 	{
 		FileInfo _info;
 
@@ -12,9 +14,11 @@ namespace FileManager
 		public override long EntrySize { get => _info.Length; }
 		public override DateTime EntryCreated { get => _info.CreationTime; }
 		public override DateTime EntryModified { get => _info.LastWriteTime; }
-		public override FileSystemInfo Info {
-			get => _info ;
-			set {
+		public override FileSystemInfo Info
+		{
+			get => _info;
+			set
+			{
 				if (!value.Exists || value.GetType() != typeof(FileInfo)) throw new ArgumentException($"FileEntry(): FileInfo {value.FullName} is invalid");
 
 				_info = (FileInfo)value;

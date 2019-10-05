@@ -85,7 +85,7 @@
 			this.dateTimeAddedHeaderLabel.Size = new System.Drawing.Size(110, 29);
 			this.dateTimeAddedHeaderLabel.TabIndex = 11;
 			this.dateTimeAddedHeaderLabel.Text = "Created";
-			this.dateTimeAddedHeaderLabel.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+			this.dateTimeAddedHeaderLabel.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
 			// 
 			// dateTimeLastModifiedHeaderLabel
 			// 
@@ -98,7 +98,7 @@
 			this.dateTimeLastModifiedHeaderLabel.Size = new System.Drawing.Size(110, 29);
 			this.dateTimeLastModifiedHeaderLabel.TabIndex = 7;
 			this.dateTimeLastModifiedHeaderLabel.Text = "Modified";
-			this.dateTimeLastModifiedHeaderLabel.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+			this.dateTimeLastModifiedHeaderLabel.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
 			// 
 			// sizeHeaderLabel
 			// 
@@ -111,7 +111,7 @@
 			this.sizeHeaderLabel.Size = new System.Drawing.Size(70, 29);
 			this.sizeHeaderLabel.TabIndex = 8;
 			this.sizeHeaderLabel.Text = "Size";
-			this.sizeHeaderLabel.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+			this.sizeHeaderLabel.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
 			// 
 			// fileTypeHeaderLabel
 			// 

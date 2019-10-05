@@ -53,7 +53,7 @@
 			this.jobEntryTabelPanel.Name = "jobEntryTabelPanel";
 			this.jobEntryTabelPanel.RowCount = 1;
 			this.jobEntryTabelPanel.RowStyles.Add(new System.Windows.Forms.RowStyle());
-			this.jobEntryTabelPanel.Size = new System.Drawing.Size(392, 25);
+			this.jobEntryTabelPanel.Size = new System.Drawing.Size(397, 25);
 			this.jobEntryTabelPanel.TabIndex = 2;
 			// 
 			// jobStatusHeaderLabel
@@ -61,7 +61,7 @@
 			this.jobStatusHeaderLabel.BackColor = System.Drawing.Color.White;
 			this.jobStatusHeaderLabel.Dock = System.Windows.Forms.DockStyle.Fill;
 			this.jobStatusHeaderLabel.Font = new System.Drawing.Font("Consolas", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-			this.jobStatusHeaderLabel.Location = new System.Drawing.Point(332, 0);
+			this.jobStatusHeaderLabel.Location = new System.Drawing.Point(337, 0);
 			this.jobStatusHeaderLabel.Margin = new System.Windows.Forms.Padding(0);
 			this.jobStatusHeaderLabel.Name = "jobStatusHeaderLabel";
 			this.jobStatusHeaderLabel.Size = new System.Drawing.Size(60, 25);
@@ -89,7 +89,7 @@
 			this.jobDetailsHeaderLabel.Font = new System.Drawing.Font("Consolas", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
 			this.jobDetailsHeaderLabel.Location = new System.Drawing.Point(63, 0);
 			this.jobDetailsHeaderLabel.Name = "jobDetailsHeaderLabel";
-			this.jobDetailsHeaderLabel.Size = new System.Drawing.Size(266, 25);
+			this.jobDetailsHeaderLabel.Size = new System.Drawing.Size(271, 25);
 			this.jobDetailsHeaderLabel.TabIndex = 13;
 			this.jobDetailsHeaderLabel.Text = "Details";
 			this.jobDetailsHeaderLabel.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
@@ -103,7 +103,7 @@
 			this.MaximumSize = new System.Drawing.Size(0, 25);
 			this.MinimumSize = new System.Drawing.Size(0, 25);
 			this.Name = "JobEntryHeader";
-			this.Size = new System.Drawing.Size(392, 25);
+			this.Size = new System.Drawing.Size(397, 25);
 			this.jobEntryTabelPanel.ResumeLayout(false);
 			this.ResumeLayout(false);
 			this.PerformLayout();

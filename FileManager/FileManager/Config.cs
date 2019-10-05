@@ -11,10 +11,14 @@ namespace FileManager
 	static class Config
 	{
 		public static string DefaultPath { get; private set; } = @"C:/";
-		public static IPanePresenter DefaultLeftPanePresenter { get; private set; } = new FilesPanePresenter(new FilesPane(), new DirectoryInfo(Config.DefaultPath));
-		public static IPanePresenter DefaultRightPanePresenter { get; private set; } = new FilesPanePresenter(new FilesPane(), new DirectoryInfo(Config.DefaultPath));
+		
+		public static FilesPanePresenter DefaultFilesPanePresenter { get => new FilesPanePresenter(new FilesPane(), new DirectoryInfo(Config.DefaultPath)); }
+		public static JobsPanePresenter DefaultJobsPanePresenter { get => new JobsPanePresenter(new JobsPane()); }
 
+		public static IPanePresenter DefaultLeftPanePresenter { get => DefaultFilesPanePresenter; }
+		public static IPanePresenter DefaultRightPanePresenter { get => DefaultFilesPanePresenter; }
 
+		public static string DefaultCommandPrompt { get; private set; } = "Type colon to enter a command";
 		public static class ColorPalette
 		{
 			public static Color White { get; private set; } = Color.White;

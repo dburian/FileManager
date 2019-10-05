@@ -2,98 +2,149 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.IO;
+using HelperExtensionLibrary;
 using System.Diagnostics;
 using System.Security.AccessControl;
 using System.Security.Principal;
 
 namespace FileManager
 {
-	class FilesPanePresenter : IPanePresenter
+	class FilesPanePresenter : IPanePresenter, IDisposable
 	{
-		int _entryInFocusIndex = 0;
-		bool _highlighting = false;
-		Comparer<FilesViewEntry> _sortOrder;
+		readonly IFilesPane pane;
+		readonly SortedEntriesHolder<FileSystemNodeEntry> entriesHolder;
+		readonly TaskScheduler UIScheduler;
+		
+		FileSystemWatcher fsWatcher;
 
-		IFilesPane pane;
-		List<FilesViewEntry> selectedEntries = new List<FilesViewEntry>();
-		List<FilesViewEntry> preparedEntries = new List<FilesViewEntry>();
-
-	
 		public FilesPanePresenter(IFilesPane paneView, DirectoryInfo currentDir)
-			: this(paneView, currentDir, Comparer<FilesViewEntry>.Create((x, y) => string.Compare(x.EntryName, y.EntryName)))
+			: this(paneView, currentDir, (x, y) => string.Compare(x.EntryName, y.EntryName))
 		{}
-		public FilesPanePresenter(IFilesPane paneView, DirectoryInfo currentDir, Comparer<FilesViewEntry> sortOrder)
+		public FilesPanePresenter(IFilesPane paneView, DirectoryInfo currentDir, Comparison<FileSystemNodeEntry> sortOrder)
 		{
 			pane = paneView;
-			pane.ScrollPanel.Resize += (object sender, EventArgs e) => AdjustScrollPanel();
-			_sortOrder = sortOrder;
 
-			DirectoryChange(currentDir);
+			entriesHolder = new SortedEntriesHolder<FileSystemNodeEntry>((EntriesPane<FileSystemNodeEntry>)pane, AlterSortOrder(sortOrder))
+			{
+				HighlightingFilter = entry => entry.GetType() != typeof(ParentDirectoryEntry)
+			};
+
+			entriesHolder.NewEntryHighlighted += NewEntryHighlighted;
+			entriesHolder.OldEntryUnhighlighted += OldEntryUnhighlighted;
+
+			ChangeDirectory(currentDir);
+
+			UIScheduler = TaskScheduler.FromCurrentSynchronizationContext();
 		}
 
-		FilesViewEntry EntryInFocus { get => pane.Entries[EntryInFocusIndex]; }
+		public event ProcessCommandDelegate ProcessComand;
+
+		public DirectoryInfo CurrentDir { get => pane.CurrentDir; }
+
 		bool HasParentDir { get => pane.CurrentDir.Parent != null; }
-		int FilesViewWindowTop
+
+		public bool ProcessKeyPress(InputKey pressedKey)
 		{
-			get => pane.ScrollPanel.VerticalScroll.Value;
-			set => pane.ScrollPanel.VerticalScroll.Value = value;
-		}
-		int FilesViewWindowBottom
-		{
-			get => FilesViewWindowTop + pane.ScrollPanel.Height;
-			set => pane.ScrollPanel.VerticalScroll.Value = value - pane.ScrollPanel.Height;
-		}
-		int EntryInFocusIndex
-		{
-			get => _entryInFocusIndex;
-			set
+			if(entriesHolder.ProcessKeyPress(pressedKey)) return true;
+
+			if (pressedKey == 'l' || pressedKey == Keys.Return || pressedKey == Keys.Right)
 			{
-				if (value < 0 || value >= pane.Entries.Count) return;
-
-				EntryInFocus.InFocus = false;
-				pane.Entries[value].InFocus = true;
-
-				_entryInFocusIndex = value;     //Switch focus to new entry
-
-				AdjustScrollPanel();
-
-				HighlightEntryInFocus();
+				var targetDir = entriesHolder.EntryInFocus.Info as DirectoryInfo;
+				if (targetDir != null) ChangeDirectory(targetDir);
+				return true;
 			}
-		}
-		double EntryInFocusTop { get => EntryInFocusIndex * 18; }
-		bool Highlighting
-		{
-			get => _highlighting;
-			set
+
+			if (pressedKey == 'h' || pressedKey == Keys.Left)
 			{
-				_highlighting = value;
-
-				HighlightEntryInFocus();
+				var parentDir = HasParentDir ? entriesHolder[0].Info as DirectoryInfo : null;
+				if (parentDir != null) ChangeDirectory(parentDir);
+				return true;
 			}
+
+			return false;
 		}
-		Comparer<FilesViewEntry> SortOrder
+		public void SetFocusOnView(bool inFocus)
 		{
-			get => _sortOrder;
-			set
-			{
-				_sortOrder = value;
+			pane.InFocus = inFocus;
+			entriesHolder.InFocus = inFocus;
+		}
+		public Control GetViewsControl() => pane.GetControl();
+		public void ChangeDirectory(DirectoryInfo targetDir)
+		{
+			fsWatcher?.Dispose();
 
-				SortPreparedEntries();
+			entriesHolder.Invalidate();
 
-				PushEntryChanges();
-			}
+			pane.SelectedEntriesCount = 0;
+			pane.SelectedEntriesSize = 0;
+			pane.CurrentDir = targetDir;
+
+			RefreshEntries();
+
+			entriesHolder.Update();
+
+			RegisterWatcher();
+		}
+		public void SetEntrySortOrder(Comparison<FileSystemNodeEntry> order)
+		{
+			entriesHolder.SortOrder = AlterSortOrder(order);
+		}
+		public IEnumerable<FileSystemInfo> GetSelectedFileSystemInfos()
+		{
+			if (entriesHolder.SelectedEntries.Count > 0)
+				return entriesHolder.SelectedEntries.Select(e => e.Info);
+			else
+				return entriesHolder.EntryInFocus.Info.AsSingleEnumerable();
+		}
+		public void Dispose()
+		{
+			fsWatcher.Dispose();
 		}
 
-		public void RefreshEntries()
+		void OnCurrentDirChange(object sender, FileSystemEventArgs e)
+		{
+			Task.Factory.StartNew(() =>
+			{
+				entriesHolder.Invalidate();
+				RefreshEntries();
+				entriesHolder.Update();
+			}, new CancellationToken(), TaskCreationOptions.None, UIScheduler);
+		}
+		void OnCurrentDirChange(object sender, RenamedEventArgs e)
+		{
+			OnCurrentDirChange(sender, new FileSystemEventArgs(WatcherChangeTypes.Renamed, CurrentDir.FullName, e.FullPath));
+		}
+		void OnWatcherError(object sender, ErrorEventArgs e)
+		{
+			Task.Factory.StartNew(() =>
+			{
+				fsWatcher.Dispose();
+				RegisterWatcher();
+			}, new CancellationToken(), TaskCreationOptions.None, UIScheduler);
+		}
+		void RegisterWatcher()
+		{
+			fsWatcher = new FileSystemWatcher(CurrentDir.FullName);
+			fsWatcher.Changed += (object sender, FileSystemEventArgs e) => Task.Factory.StartNew(() => OnCurrentDirChange(sender, e));
+			fsWatcher.Created += (object sender, FileSystemEventArgs e) => Task.Factory.StartNew(() => OnCurrentDirChange(sender, e));
+			fsWatcher.Deleted += (object sender, FileSystemEventArgs e) => Task.Factory.StartNew(() => OnCurrentDirChange(sender, e));
+			fsWatcher.Renamed += (object sender, RenamedEventArgs e) => Task.Factory.StartNew(() => OnCurrentDirChange(sender, e));
+			fsWatcher.NotifyFilter = NotifyFilters.LastAccess |
+										NotifyFilters.LastWrite |
+										NotifyFilters.FileName |
+										NotifyFilters.DirectoryName;
+			fsWatcher.Error += (object sender, ErrorEventArgs e) => Task.Factory.StartNew(() => OnWatcherError(sender, e));
+			fsWatcher.EnableRaisingEvents = true;
+		}
+		void RefreshEntries()
 		{
 			pane.CurrentDir.Refresh();
 
-			preparedEntries = new List<FilesViewEntry>();
-
-			if (HasParentDir) preparedEntries.Add(new ParentDirectoryEntry { Info = pane.CurrentDir.Parent });
+			if (HasParentDir) entriesHolder.Add(new ParentDirectoryEntry { Info = pane.CurrentDir.Parent });
 
 			FileInfo[] files;
 			DirectoryInfo[] dirs;
@@ -102,15 +153,15 @@ namespace FileManager
 				files = pane.CurrentDir.GetFiles();
 				dirs = pane.CurrentDir.GetDirectories();
 
-				preparedEntries.AddRange(from info in files.AsParallel() select new FileEntry { Info = info });
-				preparedEntries.AddRange(from info in dirs.AsParallel() select new DirectoryEntry { Info = info });
+				entriesHolder.AddRange((from info in files select new FileEntry { Info = info }).ToArray());
+				entriesHolder.AddRange((from info in dirs select new DirectoryEntry { Info = info }).ToArray());
 
 				pane.FileEntriesCount = files.Length;
 				pane.DirectoryEntriesCount = dirs.Length;
 			}
 			catch (UnauthorizedAccessException e)
 			{
-				preparedEntries.Add(new ErrorEntry(e.Message, "Unauthorized Access"));
+				entriesHolder.Add(new ErrorEntry(e.Message, "Unauthorized Access"));
 				pane.FileEntriesCount = 0;
 				pane.DirectoryEntriesCount = 0;
 			}
@@ -118,124 +169,33 @@ namespace FileManager
 			var d = new DriveInfo(pane.CurrentDir.Root.FullName);
 
 			pane.FreeSpaceInDir = d.TotalFreeSpace;
-
-			SortPreparedEntries();
-
-			PushEntryChanges();
 		}
-		public bool ProcessKeyPress(char keyChar)
+		
+		void NewEntryHighlighted(FileSystemNodeEntry entry)
 		{
-			switch (keyChar)
-			{
-				case 'j':
-				case (char)Keys.Down:
-					EntryInFocusIndex++;
-					return true;
-
-				case 'k':
-				case (char)Keys.Up:
-					EntryInFocusIndex--;
-					return true;
-
-				case 'g':
-				case (char)Keys.Home:
-					Debug.WriteLine("Home");
-					if (!Highlighting) EntryInFocusIndex = 0;
-					else
-						while (EntryInFocusIndex > 0) EntryInFocusIndex--;
-					return true;
-
-				case 'G':
-				case (char)Keys.End:
-					Debug.WriteLine("End");
-					if (!Highlighting) EntryInFocusIndex = pane.Entries.Count - 1;
-					else
-						while (EntryInFocusIndex < pane.Entries.Count - 1) EntryInFocusIndex++;
-					return true;
-
-				case 'l':
-				case (char)Keys.Right:
-				case (char)Keys.Return:
-					var targetDir = EntryInFocus.Info as DirectoryInfo;
-					if (targetDir != null) DirectoryChange(targetDir);
-					return true;
-
-				case 'h':
-				case (char)Keys.Left:
-					var parentDir = HasParentDir ? pane.Entries[0].Info as DirectoryInfo : null;
-					if (parentDir != null) DirectoryChange(parentDir);
-					return true;
-
-				case 'v':
-					Highlighting = !Highlighting;
-					return true;
-
-				default:
-					return false;
-			}
+			pane.SelectedEntriesCount++;
+			pane.SelectedEntriesSize += ComputeSize(entriesHolder.EntryInFocus.Info);
 		}
-		public void SetFocusOnView(bool inFocus) => pane.InFocus = inFocus;
-		public Control GetViewsControl() => pane.GetControl();
-
-		void DirectoryChange(DirectoryInfo targetDir)
+		void OldEntryUnhighlighted(FileSystemNodeEntry entry)
 		{
-			
-			pane.CurrentDir = targetDir;
-			RefreshEntries();
-
-			selectedEntries = new List<FilesViewEntry>();
-			pane.HighlightedEntriesCount = 0;
-			pane.HighlightedEntriesSize = 0;
-
-			//Not using the property, because the entry that was in focus no longer exists,
-			// therefore it does not make sense to set its InFocus property
-			_entryInFocusIndex = 0;
-			EntryInFocus.InFocus = true;
-
-			Highlighting = false;
-		}
-		void PushEntryChanges() => pane.Entries = preparedEntries;
-		void SortPreparedEntries()
-		{
-			if (HasParentDir)
-				preparedEntries.Sort(1, preparedEntries.Count - 1, SortOrder);
-			else
-				preparedEntries.Sort(SortOrder);
-		}
-		void HighlightEntryInFocus()
-		{
-			if (Highlighting && EntryInFocus.GetType() != typeof(ParentDirectoryEntry))
-			{
-
-				if (EntryInFocus.Highlighted)
-				{
-					selectedEntries.Remove(EntryInFocus);
-					EntryInFocus.Highlighted = false;
-					pane.HighlightedEntriesCount--;
-					pane.HighlightedEntriesSize -= ComputeSize(EntryInFocus.Info);
-				}
-				else
-				{
-					selectedEntries.Add(EntryInFocus);
-					EntryInFocus.Highlighted = true;
-					pane.HighlightedEntriesCount++;
-					pane.HighlightedEntriesSize += ComputeSize(EntryInFocus.Info);
-				}
-
-			}
+			pane.SelectedEntriesCount--;
+			pane.SelectedEntriesSize -= ComputeSize(entriesHolder.EntryInFocus.Info);
 		}
 		long ComputeSize(FileSystemInfo info)
 		{
 			var l = (info as FileInfo)?.Length;
 			return l == null ? 0 : (long)l;
 		}
-		void AdjustScrollPanel()
+		Comparison<FileSystemNodeEntry> AlterSortOrder(Comparison<FileSystemNodeEntry> order)
 		{
-			var entryInFocusTop = EntryInFocusIndex * EntryInFocus.Height;
+			return (x, y) =>
+			{
+				if (x.GetType() == typeof(ParentDirectoryEntry)) return -1;
+				if (y.GetType() == typeof(ParentDirectoryEntry)) return 1;
 
-			while (entryInFocusTop < FilesViewWindowTop) FilesViewWindowTop -= Math.Min(EntryInFocus.Height, FilesViewWindowTop);
-
-			while (entryInFocusTop + EntryInFocus.Height > FilesViewWindowBottom) FilesViewWindowTop += EntryInFocus.Height;
+				return order(x, y);
+			};
 		}
+
 	}
 }

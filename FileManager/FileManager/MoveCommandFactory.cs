@@ -8,18 +8,24 @@ namespace FileManager
 {
 	class MoveCommandFactory : ICommandFactory
 	{
-		readonly string[] names = new string[] { "move", "mv" };
+		readonly string[] names;
 
-		MoveCommand parsedCmd;
-		bool initialized = false;
-
-		public ICommand GetCommandInstance() => initialized ? parsedCmd : throw new InvalidOperationException();
-		public bool Parse(string stringInput)
+		public MoveCommandFactory()
 		{
-			if (CommandParser.ParseWithoutArgs(stringInput, names))
+			names = new string[] { "move", "mv" };
+		}
+		public MoveCommandFactory(string[] cmdNames)
+		{
+			names = cmdNames;
+		}
+
+		public bool Parse(string stringInput, out ICommand parsedCmd)
+		{
+			parsedCmd = null;
+			string[] cmd;
+			if (CommandParser.ParseWithStrArgs(stringInput, names, out cmd) && cmd.Length <= 2)
 			{
-				initialized = true;
-				parsedCmd = new MoveCommand();
+				parsedCmd = cmd.Length == 1 ? new MoveCommand() : new MoveCommand(cmd[1]);
 				return true;
 			}
 

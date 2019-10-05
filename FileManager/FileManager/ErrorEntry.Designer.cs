@@ -30,7 +30,6 @@
 		{
 			this.errorEntryTablePanel = new System.Windows.Forms.TableLayoutPanel();
 			this.errorDetailLabel = new System.Windows.Forms.Label();
-			this.errorTypeLabel = new System.Windows.Forms.Label();
 			this.errorEntryTablePanel.SuspendLayout();
 			this.SuspendLayout();
 			// 
@@ -38,9 +37,7 @@
 			// 
 			this.errorEntryTablePanel.BackColor = System.Drawing.Color.White;
 			this.errorEntryTablePanel.ColumnCount = 2;
-			this.errorEntryTablePanel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 80F));
-			this.errorEntryTablePanel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 20F));
-			this.errorEntryTablePanel.Controls.Add(this.errorTypeLabel, 1, 0);
+			this.errorEntryTablePanel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
 			this.errorEntryTablePanel.Controls.Add(this.errorDetailLabel, 0, 0);
 			this.errorEntryTablePanel.Dock = System.Windows.Forms.DockStyle.Fill;
 			this.errorEntryTablePanel.Font = new System.Drawing.Font("Consolas", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
@@ -65,19 +62,6 @@
 			this.errorDetailLabel.Text = "Access to the folder C:\\Documents and Settings was denied";
 			this.errorDetailLabel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
 			// 
-			// errorTypeLabel
-			// 
-			this.errorTypeLabel.BackColor = System.Drawing.Color.White;
-			this.errorTypeLabel.Dock = System.Windows.Forms.DockStyle.Fill;
-			this.errorTypeLabel.Font = new System.Drawing.Font("Consolas", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-			this.errorTypeLabel.Location = new System.Drawing.Point(258, 0);
-			this.errorTypeLabel.Margin = new System.Windows.Forms.Padding(0);
-			this.errorTypeLabel.Name = "errorTypeLabel";
-			this.errorTypeLabel.Size = new System.Drawing.Size(120, 16);
-			this.errorTypeLabel.TabIndex = 13;
-			this.errorTypeLabel.Text = "Access Denied";
-			this.errorTypeLabel.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
-			// 
 			// ErrorEntry
 			// 
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
@@ -98,6 +82,5 @@
 
 		private System.Windows.Forms.TableLayoutPanel errorEntryTablePanel;
 		private System.Windows.Forms.Label errorDetailLabel;
-		private System.Windows.Forms.Label errorTypeLabel;
 	}
 }

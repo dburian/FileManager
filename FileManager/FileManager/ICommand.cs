@@ -7,7 +7,5 @@ using System.Threading.Tasks;
 namespace FileManager
 {
 	interface ICommand
-	{
-		//TODO
-	}
+	{}
 }

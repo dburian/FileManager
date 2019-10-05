@@ -8,5 +8,11 @@ namespace FileManager
 {
 	struct CopyCommand : ICommand
 	{
+		public CopyCommand(string to)
+		{
+			To = to;
+		}
+
+		public string To { get; }
 	}
 }

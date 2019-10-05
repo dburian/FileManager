@@ -11,10 +11,9 @@ namespace FileManager
 	public interface IFilesPane : IPane
 	{
 		DirectoryInfo CurrentDir { get; set; }
-		List<FilesViewEntry> Entries { get; set; }
 		long FreeSpaceInDir { set; }
-		int HighlightedEntriesCount { get; set; }
-		long HighlightedEntriesSize { get; set; }
+		int SelectedEntriesCount { get; set; }
+		long SelectedEntriesSize { get; set; }
 		int FileEntriesCount { set; }
 		int DirectoryEntriesCount { set; }
 	}

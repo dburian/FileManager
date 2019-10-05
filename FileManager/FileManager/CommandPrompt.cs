@@ -17,8 +17,10 @@ namespace FileManager
 		public CommandPrompt()
 		{
 			InitializeComponent();
-			InFocus = false;
 		}
+
+		int ICommandPrompt.Width { get => commandLabel.Width - commandLabel.Padding.Left - commandLabel.Padding.Right; }
+		Font ICommandPrompt.Font { get => commandLabel.Font; }
 
 		public string Command
 		{
@@ -34,11 +36,17 @@ namespace FileManager
 
 				if (_inFocus)
 				{
-					mainPanel.BackColor = Color.Black;
+					mainPanel.BackColor = Config.ColorPalette.Black;
+					commandLabel.BackColor = Config.ColorPalette.Black;
+					commandLabel.ForeColor = Config.ColorPalette.White;
+					commandLabel.Font = new Font("Consolas", 12, FontStyle.Bold);
 				}
 				else
 				{
-					mainPanel.BackColor = Color.White;
+					mainPanel.BackColor = Config.ColorPalette.White;
+					commandLabel.BackColor = Config.ColorPalette.White;
+					commandLabel.ForeColor = Config.ColorPalette.Black;
+					commandLabel.Font = new Font("Consolas", 12, FontStyle.Regular);
 				}
 			}
 		}

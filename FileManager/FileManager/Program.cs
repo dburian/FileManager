@@ -21,6 +21,7 @@ namespace FileManager
 			MainFormPresenter mfPresenter = new MainFormPresenter(mf);
 
 			Application.Run(mf);
+			mfPresenter.Dispose();
 		}
 	}
 }
