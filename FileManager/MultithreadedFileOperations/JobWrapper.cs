@@ -10,6 +10,7 @@ namespace MultithreadedFileOperations
 	{
 		int _id;
 		bool idSealed = false;
+		JobArgumentsVisitor visitor;
 
 		public JobWrapper(Job job, CancellationTokenSource cts, Task task)
 		{
@@ -19,6 +20,9 @@ namespace MultithreadedFileOperations
 
 			Job.ExceptionRaise += OnJobException;
 			Job.ProgressChange += OnJobProgressChange;
+
+			visitor = new JobArgumentsVisitor();
+			Job.Accept(visitor);
 		}
 
 		public Task Task { get; }
@@ -55,14 +59,7 @@ namespace MultithreadedFileOperations
 
 		public IJobView GetView() => this;
 
-		public IJobArgumentsView GetArgumentsView()
-		{
-			var visitor = new JobArgumentsVisitor();
-
-			Job.Accept(visitor);
-
-			return visitor;
-		}
+		public IJobArgumentsView GetArgumentsView() => visitor;
 
 		void OnJobException(FileOperationException e)
 		{

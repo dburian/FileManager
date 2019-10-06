@@ -28,7 +28,7 @@ namespace FileManager
 			entriesHolder = new SortedEntriesHolder<JobEntry>((EntriesPane<JobEntry>)pane, (x, y) => x.EntryType - y.EntryType);
 
 			//TODO: entries do not function properly
-			entriesHolder.AddRange(views.Select(view => new JobEntry(view) { Status = JobStatus.Waiting }).ToArray());
+			entriesHolder.AddRange(views.Select(view => new JobEntry(view, view.GetJobTypeDescription()) { Status = JobStatus.Waiting }).ToArray());
 		}
 
 		public event ProcessCommandDelegate ProcessComand;
@@ -57,11 +57,13 @@ namespace FileManager
 				switch (changeEvent)
 				{
 					case JobChangeEvent.BeforeRun:
-						entriesHolder.Add(new JobEntry(jobView) { Status = JobStatus.Waiting });
+						pane.JobsQueued++;
+						entriesHolder.Add(new JobEntry(jobView, jobView.GetJobTypeDescription()) { Status = JobStatus.Waiting });
 						break;
 
 					case JobChangeEvent.AfterCompleted:
 						{
+							pane.JobsInProgress--;
 							var entry = entriesHolder.Find(e => e.JobId == jobView.Id);
 							if (entry == null || entry.Locked) return;
 
@@ -79,6 +81,12 @@ namespace FileManager
 					case JobChangeEvent.OnProgressChange:
 						{
 							var entry = entriesHolder.Find(e => e.JobId == jobView.Id);
+							if (entry.Status == JobStatus.Waiting)
+							{
+								pane.JobsQueued--;
+								pane.JobsInProgress++;
+							}
+
 							if (entry != null && !entry.Locked) entry.EntryProgress = jobView.Progress;
 						}
 						break;
@@ -109,6 +117,5 @@ namespace FileManager
 				}
 			}, new CancellationToken(), TaskCreationOptions.None, UIScheduler);
 		}
-
 	}
 }

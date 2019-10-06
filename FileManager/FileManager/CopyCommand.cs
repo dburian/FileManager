@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace FileManager
 {
-	struct CopyCommand : ICommand
+	struct CopyCommand : ITransferCommand
 	{
 		public CopyCommand(string to)
 		{

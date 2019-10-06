@@ -15,36 +15,33 @@ namespace FileManager
 	public partial class JobEntry : AbstractEntry
 	{
 		IJobArgsView _args;
-		JobType _type;
+		JobTypeDescription _type;
 		float _progress;
 		JobStatus _status;
 		FileOperationException _exception;
 
-		public JobEntry(IJobView jobView)
+		public JobEntry(IJobView jobView, JobTypeDescription typeDescription)
 		{
 			InitializeComponent();
 
 			Debug.WriteLine($"Created: {Thread.CurrentThread.ManagedThreadId}");
 
-			EntryType = jobView.Type;
 			EntryProgress = jobView.Progress;
 			EntryException = jobView.Exception;
 			JobId = jobView.Id;
 
-			switch (EntryType)
+			switch (jobView.Type)
 			{
-				case JobType.FileCopy:
-				case JobType.FileMove:
-					EntryArgs = new CopyMoveArgsView(jobView.GetArgumentsView().FileTransferArguments);
+				case JobType.FileTransfer:
+					EntryArgs = new TransferArgsView(jobView.GetArgumentsView().FileTransferArguments);
 					break;
 
 				case JobType.Delete:
 					EntryArgs = new DelArgsView(jobView.GetArgumentsView().DeleteArguments);
 					break;
 
-				case JobType.DirCopy:
-				case JobType.DirMove:
-					EntryArgs = new CopyMoveArgsView(jobView.GetArgumentsView().DirectoryTransferArguments);
+				case JobType.DirTransfer:
+					EntryArgs = new TransferArgsView(jobView.GetArgumentsView().DirectoryTransferArguments);
 					break;
 
 				default:
@@ -53,7 +50,7 @@ namespace FileManager
 		}
 
 		
-		public JobType EntryType {
+		public JobTypeDescription EntryType {
 			get => _type;
 			private set
 			{

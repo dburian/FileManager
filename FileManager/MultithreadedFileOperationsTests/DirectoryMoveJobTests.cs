@@ -1,4 +1,6 @@
-﻿using System;
+﻿#define TEST
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -41,8 +43,8 @@ namespace MultithreadedFileOperationsTests
 		public void RunSynchronously()
 		{
 			var cts = new CancellationTokenSource();
-			var job = new DirectoryMoveJob(
-				new DirectoryTransferJobArguments(state.ExistingEmptyDirectories[0], state.NonExistingDirectories[0]),
+			var job = new DirectoryTransferJob(
+				new DirectoryTransferArguments(state.ExistingEmptyDirectories[0], state.NonExistingDirectories[0], TransferSettings.DeleteOriginal),
 				cts.Token,
 				state.OnExceptionDebugPrint,
 				state.OnProgressDebugPrint
@@ -59,8 +61,8 @@ namespace MultithreadedFileOperationsTests
 		public void RunSynchronouslyNonEmpty()
 		{
 			var cts = new CancellationTokenSource();
-			var job = new DirectoryMoveJob(
-				new DirectoryTransferJobArguments(state.ExistingNonEmptyDirectories[0], state.NonExistingDirectories[0]),
+			var job = new DirectoryTransferJob(
+				new DirectoryTransferArguments(state.ExistingNonEmptyDirectories[0], state.NonExistingDirectories[0], TransferSettings.DeleteOriginal),
 				cts.Token,
 				state.OnExceptionDebugPrint,
 				state.OnProgressDebugPrint
@@ -82,8 +84,8 @@ namespace MultithreadedFileOperationsTests
 			var tasks = new Task[state.ExistingNonEmptyDirectories.Length];
 			for (int i = 0; i < state.ExistingNonEmptyDirectories.Length; i++)
 			{
-				var job = new DirectoryMoveJob(
-				new DirectoryTransferJobArguments(state.ExistingNonEmptyDirectories[i], state.NonExistingDirectories[i]),
+				var job = new DirectoryTransferJob(
+				new DirectoryTransferArguments(state.ExistingNonEmptyDirectories[i], state.NonExistingDirectories[i], TransferSettings.DeleteOriginal),
 				cts.Token,
 				state.OnExceptionDebugPrint,
 				state.OnProgressDebugPrint
@@ -109,8 +111,8 @@ namespace MultithreadedFileOperationsTests
 		public void DestinationDoesExist()
 		{
 			var cts = new CancellationTokenSource();
-			var job = new DirectoryMoveJob(
-				new DirectoryTransferJobArguments(state.ExistingNonEmptyDirectories[0], state.ExistingEmptyDirectories[0]),
+			var job = new DirectoryTransferJob(
+				new DirectoryTransferArguments(state.ExistingNonEmptyDirectories[0], state.ExistingEmptyDirectories[0], TransferSettings.DeleteOriginal),
 				cts.Token,
 				state.OnExceptionDebugPrint,
 				state.OnProgressDebugPrint
@@ -119,11 +121,10 @@ namespace MultithreadedFileOperationsTests
 			try
 			{
 				job.Run();
-			}catch(DirectoryMoveException e)
+			}catch(DirectoryTransferException e)
 			{
 				state.ExceptionThrown = true;
-				Assert.IsTrue(e.InnerException is DirectoryCopyException);
-				Assert.IsTrue(e.InnerException.InnerException is IOException);
+				Assert.IsTrue(e.InnerException is IOException);
 			}
 
 			Assert.IsTrue(state.ExceptionThrown);
@@ -139,8 +140,8 @@ namespace MultithreadedFileOperationsTests
 		public void SourceDoesNotExist()
 		{
 			var cts = new CancellationTokenSource();
-			var job = new DirectoryMoveJob(
-				new DirectoryTransferJobArguments(state.NonExistingDirectories[0], state.NonExistingDirectories[1]),
+			var job = new DirectoryTransferJob(
+				new DirectoryTransferArguments(state.NonExistingDirectories[0], state.NonExistingDirectories[1], TransferSettings.DeleteOriginal),
 				cts.Token,
 				state.OnExceptionDebugPrint,
 				state.OnProgressDebugPrint
@@ -150,11 +151,10 @@ namespace MultithreadedFileOperationsTests
 			{
 				job.Run();
 			}
-			catch (DirectoryMoveException e)
+			catch (DirectoryTransferException e)
 			{
 				state.ExceptionThrown = true;
-				Assert.IsTrue(e.InnerException is DirectoryCopyException);
-				Assert.IsTrue(e.InnerException.InnerException is IOException);
+				Assert.IsTrue(e.InnerException is IOException);
 			}
 
 			Assert.IsTrue(state.ExceptionThrown);
@@ -168,8 +168,8 @@ namespace MultithreadedFileOperationsTests
 		public void CanceledBefore()
 		{
 			var cts = new CancellationTokenSource();
-			var job = new DirectoryMoveJob(
-				new DirectoryTransferJobArguments(state.ExistingNonEmptyDirectories[0], state.NonExistingDirectories[0]),
+			var job = new DirectoryTransferJob(
+				new DirectoryTransferArguments(state.ExistingNonEmptyDirectories[0], state.NonExistingDirectories[0], TransferSettings.DeleteOriginal),
 				cts.Token,
 				state.OnExceptionDebugPrint,
 				state.OnProgressDebugPrint
@@ -198,8 +198,8 @@ namespace MultithreadedFileOperationsTests
 		public void CanceledBeforeAndDestinationDoesExists()
 		{
 			var cts = new CancellationTokenSource();
-			var job = new DirectoryMoveJob(
-				new DirectoryTransferJobArguments(state.ExistingNonEmptyDirectories[0], state.ExistingNonEmptyDirectories[1]),
+			var job = new DirectoryTransferJob(
+				new DirectoryTransferArguments(state.ExistingNonEmptyDirectories[0], state.ExistingNonEmptyDirectories[1], TransferSettings.DeleteOriginal),
 				cts.Token,
 				state.OnExceptionDebugPrint,
 				state.OnProgressDebugPrint
@@ -229,8 +229,8 @@ namespace MultithreadedFileOperationsTests
 		public void DestinationWithoutRights()
 		{
 			var cts = new CancellationTokenSource();
-			var job = new DirectoryMoveJob(
-				new DirectoryTransferJobArguments(state.ExistingNonEmptyDirectories[0], state.NonExistingDirecoryWithoutWriteRights),
+			var job = new DirectoryTransferJob(
+				new DirectoryTransferArguments(state.ExistingNonEmptyDirectories[0], state.NonExistingDirecoryWithoutWriteRights, TransferSettings.DeleteOriginal),
 				cts.Token,
 				state.OnExceptionDebugPrint,
 				state.OnProgressDebugPrint
@@ -240,11 +240,10 @@ namespace MultithreadedFileOperationsTests
 			{
 				job.Run();
 			}
-			catch (DirectoryMoveException e)
+			catch (DirectoryTransferException e)
 			{
 				state.ExceptionThrown = true;
-				Assert.IsTrue(e.InnerException is DirectoryCopyException);
-				Assert.IsTrue(e.InnerException.InnerException is UnauthorizedAccessException);
+				Assert.IsTrue(e.InnerException is UnauthorizedAccessException);
 			}
 
 			Assert.IsTrue(state.ExceptionThrown);
@@ -258,8 +257,8 @@ namespace MultithreadedFileOperationsTests
 		public void SourceWithoutRights()
 		{
 			var cts = new CancellationTokenSource();
-			var job = new DirectoryMoveJob(
-				new DirectoryTransferJobArguments(state.ExistingDirecoryWithoutReadRights, state.NonExistingDirectories[0]),
+			var job = new DirectoryTransferJob(
+				new DirectoryTransferArguments(state.ExistingDirecoryWithoutReadRights, state.NonExistingDirectories[0], TransferSettings.DeleteOriginal),
 				cts.Token,
 				state.OnExceptionDebugPrint,
 				state.OnProgressDebugPrint
@@ -269,11 +268,10 @@ namespace MultithreadedFileOperationsTests
 			{
 				job.Run();
 			}
-			catch (DirectoryMoveException e)
+			catch (DirectoryTransferException e)
 			{
 				state.ExceptionThrown = true;
-				Assert.IsTrue(e.InnerException is DirectoryCopyException);
-				Assert.IsTrue(e.InnerException.InnerException is UnauthorizedAccessException);
+				Assert.IsTrue(e.InnerException is UnauthorizedAccessException);
 			}
 
 			Assert.IsTrue(state.ExceptionThrown);
@@ -289,8 +287,8 @@ namespace MultithreadedFileOperationsTests
 			using (var fs = new FileStream(Path.Combine(Path.GetTempPath(), @"existingNonEmptyDirectory1\existingEmptyDirectory1\existingFile1.txt"), FileMode.Open, FileAccess.Read, FileShare.Read))
 			{
 				var cts = new CancellationTokenSource();
-				var job = new DirectoryMoveJob(
-					new DirectoryTransferJobArguments(state.ExistingNonEmptyDirectories[0], state.NonExistingDirectories[0]),
+				var job = new DirectoryTransferJob(
+					new DirectoryTransferArguments(state.ExistingNonEmptyDirectories[0], state.NonExistingDirectories[0], TransferSettings.DeleteOriginal),
 					cts.Token,
 					state.OnExceptionDebugPrint,
 					state.OnProgressDebugPrint
@@ -300,18 +298,20 @@ namespace MultithreadedFileOperationsTests
 				{
 					job.Run();
 				}
-				catch (DirectoryMoveException e)
+				catch (DirectoryTransferException e)
 				{
 					state.ExceptionThrown = true;
-					Assert.IsTrue(e.InnerException is FileDeleteException);
-					Assert.IsTrue(e.InnerException.InnerException is IOException);
+					//Exceptions reflect file system hierarchy
+					Assert.IsTrue(e.InnerException is DirectoryTransferException);
+					Assert.IsTrue(e.InnerException.InnerException is FileTransferException);
+					Assert.IsTrue(e.InnerException.InnerException.InnerException is IOException);
 				}
 
 				Assert.IsTrue(state.ExceptionThrown);
 
 				state.ExistingNonEmptyDirectories[0].Refresh();
 				state.NonExistingDirectories[0].Refresh();
-				Assert.IsTrue(state.NonExistingDirectories[0].Exists);
+				Assert.IsFalse(state.NonExistingDirectories[0].Exists);
 				Assert.IsTrue(state.ExistingNonEmptyDirectories[0].Exists);
 			}
 		}

@@ -6,8 +6,8 @@ namespace MultithreadedFileOperations
 {
 	public interface IJobArgumentsView
 	{
-		FileTransferJobArguments FileTransferArguments { get; }
-		DirectoryTransferJobArguments DirectoryTransferArguments { get; }
+		FileTransferArguments FileTransferArguments { get; }
+		DirectoryTransferArguments DirectoryTransferArguments { get; }
 		DeleteJobArguments DeleteArguments { get; }
 	}
 }

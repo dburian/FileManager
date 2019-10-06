@@ -1,4 +1,6 @@
-﻿using System;
+﻿#define TEST
+
+using System;
 using System.Text;
 using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -28,8 +30,8 @@ namespace MultithreadedFileOperationsTests
 			string existingFileContent = File.ReadAllText(state.ExistingFiles[0].FullName);
 
 			var cts = new CancellationTokenSource();
-			var moveJob = new FileMoveJob(
-				new FileTransferJobArguments(state.ExistingFiles[0], state.NonExistingFiles[0]),
+			var moveJob = new FileTransferJob(
+				new FileTransferArguments(state.ExistingFiles[0], state.NonExistingFiles[0], TransferSettings.DeleteOriginal),
 				cts.Token,
 				state.OnExceptionDebugPrint,
 				state.OnProgressDebugPrint
@@ -55,8 +57,8 @@ namespace MultithreadedFileOperationsTests
 			Assert.AreEqual(state.NonExistingFiles.Length, state.ExistingFiles.Length);
 			for (int i = 0; i < state.NonExistingFiles.Length; i++)
 			{
-				var moveJob = new FileMoveJob(
-					new FileTransferJobArguments(state.ExistingFiles[i], state.NonExistingFiles[i]),
+				var moveJob = new FileTransferJob(
+					new FileTransferArguments(state.ExistingFiles[i], state.NonExistingFiles[i], TransferSettings.DeleteOriginal),
 					cts.Token,
 					state.OnExceptionDebugPrint,
 					state.OnProgressDebugPrint
@@ -83,8 +85,8 @@ namespace MultithreadedFileOperationsTests
 		public void SourceDoesNotExist()
 		{
 			var cts = new CancellationTokenSource();
-			var moveJob = new FileMoveJob(
-				new FileTransferJobArguments(state.NonExistingFiles[0], state.NonExistingFiles[1]),
+			var moveJob = new FileTransferJob(
+				new FileTransferArguments(state.NonExistingFiles[0], state.NonExistingFiles[1], TransferSettings.DeleteOriginal),
 				cts.Token,
 				state.OnExceptionDebugPrint,
 				state.OnProgressDebugPrint
@@ -94,11 +96,10 @@ namespace MultithreadedFileOperationsTests
 			{
 				moveJob.Run();
 			}
-			catch (FileMoveException e)
+			catch (FileTransferException e)
 			{
 				state.ExceptionThrown = true;
-				Assert.IsTrue(e.InnerException is FileCopyException);
-				Assert.IsTrue(e.InnerException.InnerException is FileNotFoundException);
+				Assert.IsTrue(e.InnerException is FileNotFoundException);
 			}
 
 			
@@ -112,8 +113,8 @@ namespace MultithreadedFileOperationsTests
 		public void DestinationAlreadyExists()
 		{
 			var cts = new CancellationTokenSource();
-			var moveJob = new FileMoveJob(
-				new FileTransferJobArguments(state.ExistingFiles[0], state.ExistingFiles[1]),
+			var moveJob = new FileTransferJob(
+				new FileTransferArguments(state.ExistingFiles[0], state.ExistingFiles[1], TransferSettings.DeleteOriginal),
 				cts.Token,
 				state.OnExceptionDebugPrint,
 				state.OnProgressDebugPrint
@@ -123,11 +124,10 @@ namespace MultithreadedFileOperationsTests
 			{
 				moveJob.Run();
 			}
-			catch (FileMoveException e)
+			catch (FileTransferException e)
 			{
 				state.ExceptionThrown = true;
-				Assert.IsTrue(e.InnerException is FileCopyException);
-				Assert.IsTrue(e.InnerException.InnerException is IOException);
+				Assert.IsTrue(e.InnerException is IOException);
 			}
 
 			state.ExistingFiles[0].Refresh();
@@ -143,8 +143,8 @@ namespace MultithreadedFileOperationsTests
 		public void SourceWithoutRights()
 		{
 			var cts = new CancellationTokenSource();
-			var moveJob = new FileMoveJob(
-				new FileTransferJobArguments(state.ExistentFileWithoutRights, state.NonExistingFiles[0]),
+			var moveJob = new FileTransferJob(
+				new FileTransferArguments(state.ExistentFileWithoutRights, state.NonExistingFiles[0], TransferSettings.DeleteOriginal),
 				cts.Token,
 				state.OnExceptionDebugPrint,
 				state.OnProgressDebugPrint
@@ -154,11 +154,10 @@ namespace MultithreadedFileOperationsTests
 			{
 				moveJob.Run();
 			}
-			catch (FileMoveException e)
+			catch (FileTransferException e)
 			{
 				state.ExceptionThrown = true;
-				Assert.IsTrue(e.InnerException is FileDeleteException) ;
-				Assert.IsTrue(e.InnerException.InnerException is UnauthorizedAccessException);
+				Assert.IsTrue(e.InnerException is UnauthorizedAccessException);
 			}
 
 			state.ExistentFileWithoutRights.Refresh();
@@ -173,8 +172,8 @@ namespace MultithreadedFileOperationsTests
 		public void DestinationWithoutRights()
 		{
 			var cts = new CancellationTokenSource();
-			var moveJob = new FileMoveJob(
-				new FileTransferJobArguments(state.ExistingFiles[0], state.NonExistentFileWithoutRights),
+			var moveJob = new FileTransferJob(
+				new FileTransferArguments(state.ExistingFiles[0], state.NonExistentFileWithoutRights, TransferSettings.DeleteOriginal),
 				cts.Token,
 				state.OnExceptionDebugPrint,
 				state.OnProgressDebugPrint
@@ -184,11 +183,10 @@ namespace MultithreadedFileOperationsTests
 			{
 				moveJob.Run();
 			}
-			catch (FileMoveException e)
+			catch (FileTransferException e)
 			{
 				state.ExceptionThrown = true;
-				Assert.IsTrue(e.InnerException is FileCopyException);
-				Assert.IsTrue(e.InnerException.InnerException is UnauthorizedAccessException);
+				Assert.IsTrue(e.InnerException is UnauthorizedAccessException);
 			}
 
 			state.ExistingFiles[0].Refresh();
@@ -202,8 +200,8 @@ namespace MultithreadedFileOperationsTests
 		public void CanceledBefore()
 		{
 			var cts = new CancellationTokenSource();
-			var moveJob = new FileMoveJob(
-				new FileTransferJobArguments(state.ExistingFiles[0], state.NonExistingFiles[0]),
+			var moveJob = new FileTransferJob(
+				new FileTransferArguments(state.ExistingFiles[0], state.NonExistingFiles[0], TransferSettings.DeleteOriginal),
 				cts.Token,
 				state.OnExceptionDebugPrint,
 				state.OnProgressDebugPrint
@@ -236,8 +234,8 @@ namespace MultithreadedFileOperationsTests
 		public void CanceledBeforeAndSourceDoesNotExist()
 		{
 			var cts = new CancellationTokenSource();
-			var moveJob = new FileMoveJob(
-				new FileTransferJobArguments(state.NonExistingFiles[0], state.NonExistingFiles[1]),
+			var moveJob = new FileTransferJob(
+				new FileTransferArguments(state.NonExistingFiles[0], state.NonExistingFiles[1], TransferSettings.DeleteOriginal),
 				cts.Token,
 				state.OnExceptionDebugPrint,
 				state.OnProgressDebugPrint
@@ -271,8 +269,8 @@ namespace MultithreadedFileOperationsTests
 		public void CanceledBeforeAndSourceWithoutRights()
 		{
 			var cts = new CancellationTokenSource();
-			var moveJob = new FileMoveJob(
-				new FileTransferJobArguments(state.ExistentFileWithoutRights, state.NonExistingFiles[0]),
+			var moveJob = new FileTransferJob(
+				new FileTransferArguments(state.ExistentFileWithoutRights, state.NonExistingFiles[0], TransferSettings.DeleteOriginal),
 				cts.Token,
 				state.OnExceptionDebugPrint,
 				state.OnProgressDebugPrint
@@ -308,8 +306,8 @@ namespace MultithreadedFileOperationsTests
 			using (var fs = new FileStream(state.ExistingFiles[0].FullName, FileMode.Open, FileAccess.Read, FileShare.Read))
 			{
 				var ctSource = new CancellationTokenSource();
-				var mvJob = new FileMoveJob(
-					new FileTransferJobArguments(state.ExistingFiles[0], state.NonExistingFiles[0]),
+				var mvJob = new FileTransferJob(
+					new FileTransferArguments(state.ExistingFiles[0], state.NonExistingFiles[0], TransferSettings.DeleteOriginal),
 					ctSource.Token,
 					state.OnExceptionDebugPrint,
 					state.OnProgressDebugPrint
@@ -319,11 +317,10 @@ namespace MultithreadedFileOperationsTests
 				{
 					mvJob.Run();
 				}
-				catch (FileMoveException e)
+				catch (FileTransferException e)
 				{
 					state.ExceptionThrown = true;
-					Assert.IsTrue(e.InnerException is FileDeleteException);
-					Assert.IsTrue(e.InnerException.InnerException is IOException);
+					Assert.IsTrue(e.InnerException is IOException);
 				}
 
 				Assert.IsTrue(state.ExceptionThrown);

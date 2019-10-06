@@ -38,9 +38,11 @@ namespace MultithreadedFileOperations
 				OnProgressChange(100f);
 			}catch (Exception e) when (e is DirectoryNotFoundException || e is IOException || e is UnauthorizedAccessException)
 			{
-				var fileE = new FileDeleteException(Args, e);
-				OnExceptionRaise(fileE);
-				throw fileE;
+				var ex = new FileDeleteException(Args, e);
+				OnExceptionRaise(ex);
+#if TEST
+				throw ex;
+#endif
 			}
 		}
 

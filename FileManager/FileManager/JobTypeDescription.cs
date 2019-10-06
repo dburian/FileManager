@@ -6,13 +6,13 @@ using System.Threading.Tasks;
 
 namespace FileManager
 {
-	struct MoveCommand : ITransferCommand
+	public enum JobTypeDescription
 	{
-		public MoveCommand(string to)
-		{
-			To = to;
-		}
-
-		public string To { get; }
+		FileMove,
+		FileCopy,
+		DirMove,
+		DirCopy,
+		DirDelete,
+		FileDelete
 	}
 }

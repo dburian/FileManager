@@ -6,27 +6,18 @@ namespace MultithreadedFileOperations
 {
 	class JobArgumentsVisitor : IJobVisitor, IJobArgumentsView
 	{
-		public FileTransferJobArguments FileTransferArguments { get; private set; }
-		public DirectoryTransferJobArguments DirectoryTransferArguments { get; private set; }
+		public FileTransferArguments FileTransferArguments { get; private set; }
+		public DirectoryTransferArguments DirectoryTransferArguments { get; private set; }
 
 		public DeleteJobArguments DeleteArguments { get; private set; }
 
-		public void Visit(DirectoryCopyJob job)
+		
+		public void Visit(DirectoryTransferJob job)
 		{
 			DirectoryTransferArguments = job.Args;
 		}
 
-		public void Visit(DirectoryMoveJob job)
-		{
-			DirectoryTransferArguments = job.Args;
-		}
-
-		void IJobVisitor.Visit(FileCopyJob job)
-		{
-			FileTransferArguments = job.Args;
-		}
-
-		void IJobVisitor.Visit(FileMoveJob job)
+		void IJobVisitor.Visit(FileTransferJob job)
 		{
 			FileTransferArguments = job.Args;
 		}

@@ -6,10 +6,8 @@ namespace MultithreadedFileOperations
 {
 	interface IJobVisitor
 	{
-		void Visit(FileCopyJob job);
-		void Visit(FileMoveJob job);
+		void Visit(FileTransferJob job);
 		void Visit(DeleteJob job);
-		void Visit(DirectoryCopyJob job);
-		void Visit(DirectoryMoveJob job);
+		void Visit(DirectoryTransferJob job);
 	}
 }

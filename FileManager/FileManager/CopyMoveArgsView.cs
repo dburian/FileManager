@@ -12,11 +12,11 @@ using System.Diagnostics;
 
 namespace FileManager
 {
-	public partial class CopyMoveArgsView : UserControl, IJobArgsView
+	public partial class TransferArgsView : UserControl, IJobArgsView
 	{
 		ITransferJobArguments _args;
 
-		public CopyMoveArgsView()
+		public TransferArgsView()
 		{
 			//Dummy init for VS
 			InitializeComponent();
@@ -25,7 +25,7 @@ namespace FileManager
 			toArgLabel.Text = "Destination file";
 		}
 
-		public CopyMoveArgsView(ITransferJobArguments args)
+		public TransferArgsView(ITransferJobArguments args)
 		{
 			InitializeComponent();
 

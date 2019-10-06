@@ -1,4 +1,6 @@
-﻿using System;
+﻿#define TEST
+
+using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.IO;
 using System.Threading;
@@ -6,6 +8,7 @@ using System.Threading.Tasks;
 using MultithreadedFileOperations;
 using System.Diagnostics;
 using System.Linq;
+
 
 namespace MultithreadedFileOperationsTests
 {

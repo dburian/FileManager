@@ -132,7 +132,7 @@
 			this.jobsInProgressLabel.Name = "jobsInProgressLabel";
 			this.jobsInProgressLabel.Size = new System.Drawing.Size(100, 34);
 			this.jobsInProgressLabel.TabIndex = 0;
-			this.jobsInProgressLabel.Text = "Y jobs in progress";
+			this.jobsInProgressLabel.Text = "0 jobs in progress";
 			this.jobsInProgressLabel.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
 			// 
 			// jobsQueuedLabel
@@ -145,7 +145,7 @@
 			this.jobsQueuedLabel.Name = "jobsQueuedLabel";
 			this.jobsQueuedLabel.Size = new System.Drawing.Size(119, 34);
 			this.jobsQueuedLabel.TabIndex = 1;
-			this.jobsQueuedLabel.Text = "X jobs queued";
+			this.jobsQueuedLabel.Text = "0 jobs queued";
 			this.jobsQueuedLabel.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
 			// 
 			// jobsSelectedLabel

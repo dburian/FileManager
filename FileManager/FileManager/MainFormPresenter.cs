@@ -227,12 +227,12 @@ namespace FileManager
 		{	
 			if (cmd.GetType() == typeof(CopyCommand))
 			{
-				HandleCopyCommand((CopyCommand)cmd);
+				HandleTransferCommand((CopyCommand)cmd);
 				return true;
 			}
 			else if (cmd.GetType() == typeof(MoveCommand))
 			{
-				HandleMoveCommand((MoveCommand)cmd);
+				HandleTransferCommand((MoveCommand)cmd);
 				return true;
 			}
 			else if (cmd.GetType() == typeof(DeleteCommand))
@@ -280,7 +280,7 @@ namespace FileManager
 		}
 
 		#region CommandHanlders
-		void HandleCopyCommand(CopyCommand cmd)
+		void HandleTransferCommand(ITransferCommand cmd)
 		{
 			void WithoutTargetName(IEnumerable<FileSystemInfo> infos, DirectoryInfo targetDir)
 			{
@@ -288,8 +288,8 @@ namespace FileManager
 				List<DirectoryInfo> dirInfos;
 				SeparateFileSystemInfos(infos, out fileInfos, out dirInfos);
 
-				Operations.CopyFiles(fileInfos, targetDir);
-				Operations.CopyDirectories(dirInfos, targetDir);
+				Operations.TransferFiles(fileInfos, targetDir, TransferSettings.None);
+				Operations.TransferDirectories(dirInfos, targetDir, TransferSettings.None);
 
 				ResetCommandPromptIfNecessary();
 			}
@@ -327,66 +327,13 @@ namespace FileManager
 				}
 			}
 
+			var transferSettings = cmd.GetType() == typeof(CopyCommand) ? TransferSettings.None : TransferSettings.DeleteOriginal;
+
 			var dest = new FileInfo(cmd.To);
 			if (files.Count == 1)
-				Operations.CopyFiles((files[0], dest).AsSingleEnumerable());
+				Operations.TransferFiles((files[0], dest).AsSingleEnumerable(), transferSettings);
 			else
-				Operations.CopyFiles(files, dest.Directory, dest.Name);
-
-			ResetCommandPromptIfNecessary();
-		}
-		void HandleMoveCommand(MoveCommand cmd)
-		{
-			void WithoutTargetName(IEnumerable<FileSystemInfo> movedItems, DirectoryInfo targetDir)
-			{
-				List<FileInfo> fileInfos;
-				List<DirectoryInfo> dirInfos;
-				SeparateFileSystemInfos(movedItems, out fileInfos, out dirInfos);
-
-				Operations.MoveFiles(fileInfos, targetDir);
-				Operations.MoveDirectories(dirInfos, targetDir);
-
-				ResetCommandPromptIfNecessary();
-			}
-
-			FilesPanePresenter activeFilesPresenter;
-			
-			if (cmd.To == null)
-			{
-				FilesPanePresenter inactiveFilesPresenter;
-				if (!BothPanesAreFilePanesCheck(cmd, out activeFilesPresenter, out inactiveFilesPresenter)) return;
-
-				WithoutTargetName(activeFilesPresenter.GetSelectedFileSystemInfos(), inactiveFilesPresenter.CurrentDir);
-				return;
-			}
-
-			if (!FilesPaneActiveCheck(cmd, out activeFilesPresenter)) return;
-
-			if (cmd.To.IsDirectoryPath())
-			{
-				WithoutTargetName(activeFilesPresenter.GetSelectedFileSystemInfos(), new DirectoryInfo(cmd.To));
-				return;
-			}
-
-			var selectedInfos = activeFilesPresenter.GetSelectedFileSystemInfos();
-			var files = new List<FileInfo>();
-
-			foreach (var info in selectedInfos)
-			{
-				if (info.GetType() == typeof(FileInfo))
-					files.Add((FileInfo)info);
-				else
-				{
-					ErrorFormFactory.CreateFromException(new TransferDirectoryIntoFileException(cmd, info.FullName, cmd.To)).ShowAsDialog();
-					return;
-				}
-			}
-			
-			var dest = new FileInfo(cmd.To);
-			if (files.Count == 1)
-				Operations.MoveFiles((files[0], dest).AsSingleEnumerable());
-			else
-				Operations.MoveFiles(files, dest.Directory, dest.Name);
+				Operations.TransferFiles(files, dest.Directory, dest.Name, transferSettings);
 
 			ResetCommandPromptIfNecessary();
 		}
@@ -397,6 +344,8 @@ namespace FileManager
 			{
 				FilesPanePresenter activeFilesPresenter;
 				if (!FilesPaneActiveCheck(cmd, out activeFilesPresenter)) return;
+
+				targets = activeFilesPresenter.GetSelectedFileSystemInfos();
 			}else
 			{
 				if (cmd.TargetPath.IsDirectoryPath())

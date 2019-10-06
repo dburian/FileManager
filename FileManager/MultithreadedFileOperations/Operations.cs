@@ -10,104 +10,104 @@ namespace MultithreadedFileOperations
 {
 	public static class Operations
 	{
-		#region Copy
-		public static void CopyFiles(IEnumerable<FileInfo> sources, DirectoryInfo destinationDirectory)
-		{
-			IEnumerable<(FileInfo, FileInfo)> GenerateCopies()
-			{
-				foreach (var source in sources)
-					yield return (source, new FileInfo(Path.Combine(destinationDirectory.FullName, source.Name)));
+		//#region Copy
+		//public static void CopyFiles(IEnumerable<FileInfo> sources, DirectoryInfo destinationDirectory)
+		//{
+		//	IEnumerable<(FileInfo, FileInfo)> GenerateCopies()
+		//	{
+		//		foreach (var source in sources)
+		//			yield return (source, new FileInfo(Path.Combine(destinationDirectory.FullName, source.Name)));
 
-			}
+		//	}
 
-			Task.Run(() => CopyFiles(GenerateCopies()));
-		}
-		public static void CopyFiles(IEnumerable<FileInfo> sources, DirectoryInfo destinationDirectory, string namePrefix)
-		{
-			IEnumerable<(FileInfo, FileInfo)> GenerateCopies()
-			{
-				int counter = 0;
-				foreach (var source in sources)
-				{
-					yield return (source, new FileInfo(Path.Combine(destinationDirectory.FullName, namePrefix + counter)));
+		//	Task.Run(() => CopyFiles(GenerateCopies()));
+		//}
+		//public static void CopyFiles(IEnumerable<FileInfo> sources, DirectoryInfo destinationDirectory, string namePrefix)
+		//{
+		//	IEnumerable<(FileInfo, FileInfo)> GenerateCopies()
+		//	{
+		//		int counter = 0;
+		//		foreach (var source in sources)
+		//		{
+		//			yield return (source, new FileInfo(Path.Combine(destinationDirectory.FullName, namePrefix + counter)));
 
-					counter++;
-				}
-			}
+		//			counter++;
+		//		}
+		//	}
 
-			Task.Run(() => CopyFiles(GenerateCopies()));
-		}
-		public static void CopyFiles(IEnumerable<(FileInfo source, FileInfo destination)> copies)
-		{
-			var t = new Task(() => 
-			{
-				foreach (var copy in copies)
-				{
-					var cts = new CancellationTokenSource();
-					var job = new FileCopyJob(new FileTransferJobArguments(copy.source, copy.destination), cts.Token);
+		//	Task.Run(() => CopyFiles(GenerateCopies()));
+		//}
+		//public static void CopyFiles(IEnumerable<(FileInfo source, FileInfo destination)> copies)
+		//{
+		//	var t = new Task(() => 
+		//	{
+		//		foreach (var copy in copies)
+		//		{
+		//			var cts = new CancellationTokenSource();
+		//			var job = new FileCopyJob(new FileTransferArguments(copy.source, copy.destination), cts.Token);
 
-					JobsPool.StartNew(job, cts);
-				}
-			});
+		//			JobsPool.StartNew(job, cts);
+		//		}
+		//	});
 
-			if (TaskScheduler.Current == TaskScheduler.Default)
-				t.RunSynchronously();
-			else
-				t.Start(TaskScheduler.Default);
-		}
+		//	if (TaskScheduler.Current == TaskScheduler.Default)
+		//		t.RunSynchronously();
+		//	else
+		//		t.Start(TaskScheduler.Default);
+		//}
 
 
-		public static void CopyDirectories(IEnumerable<DirectoryInfo> sources, DirectoryInfo destinationDirectory)
-		{
-			IEnumerable<(DirectoryInfo, DirectoryInfo)> GenerateCopies()
-			{
-				foreach (var source in sources)
-					yield return (source, new DirectoryInfo(Path.Combine(destinationDirectory.FullName, source.Name)));
-			}
+		//public static void CopyDirectories(IEnumerable<DirectoryInfo> sources, DirectoryInfo destinationDirectory)
+		//{
+		//	IEnumerable<(DirectoryInfo, DirectoryInfo)> GenerateCopies()
+		//	{
+		//		foreach (var source in sources)
+		//			yield return (source, new DirectoryInfo(Path.Combine(destinationDirectory.FullName, source.Name)));
+		//	}
 
-			Task.Run(() => CopyDirectories(GenerateCopies()));
-		}
-		public static void CopyDirectories(IEnumerable<DirectoryInfo> sources, DirectoryInfo destinationDirectory, string namePrefix)
-		{
-			string name;
-			string extension;
-			NameExtensionSplit(namePrefix, out name, out extension);
+		//	Task.Run(() => CopyDirectories(GenerateCopies()));
+		//}
+		//public static void CopyDirectories(IEnumerable<DirectoryInfo> sources, DirectoryInfo destinationDirectory, string namePrefix)
+		//{
+		//	string name;
+		//	string extension;
+		//	NameExtensionSplit(namePrefix, out name, out extension);
 
-			IEnumerable<(DirectoryInfo, DirectoryInfo)> GenerateCopies()
-			{
-				int counter = 0;
-				foreach (var source in sources)
-				{
-					yield return (source, new DirectoryInfo(Path.Combine(destinationDirectory.FullName, name + counter + extension)));
+		//	IEnumerable<(DirectoryInfo, DirectoryInfo)> GenerateCopies()
+		//	{
+		//		int counter = 0;
+		//		foreach (var source in sources)
+		//		{
+		//			yield return (source, new DirectoryInfo(Path.Combine(destinationDirectory.FullName, name + counter + extension)));
 
-					counter++;
-				}
-			}
+		//			counter++;
+		//		}
+		//	}
 
-			Task.Run(() => CopyDirectories(GenerateCopies()));
-		}
-		public static void CopyDirectories(IEnumerable<(DirectoryInfo source, DirectoryInfo destination)> copies)
-		{
-			var t = new Task(() =>
-			{
-				foreach(var copy in copies)
-				{
-					var cts = new CancellationTokenSource();
-					var job = new DirectoryCopyJob(new DirectoryTransferJobArguments(copy.source, copy.destination), cts.Token);
+		//	Task.Run(() => CopyDirectories(GenerateCopies()));
+		//}
+		//public static void CopyDirectories(IEnumerable<(DirectoryInfo source, DirectoryInfo destination)> copies)
+		//{
+		//	var t = new Task(() =>
+		//	{
+		//		foreach(var copy in copies)
+		//		{
+		//			var cts = new CancellationTokenSource();
+		//			var job = new DirectoryCopyJob(new DirectoryTransferArguments(copy.source, copy.destination), cts.Token);
 
-					JobsPool.StartNew(job, cts);
-				}
-			});
+		//			JobsPool.StartNew(job, cts);
+		//		}
+		//	});
 
-			if (TaskScheduler.Current == TaskScheduler.Default)
-				t.RunSynchronously();
-			else
-				t.Start(TaskScheduler.Default);
-		}
-		#endregion
+		//	if (TaskScheduler.Current == TaskScheduler.Default)
+		//		t.RunSynchronously();
+		//	else
+		//		t.Start(TaskScheduler.Default);
+		//}
+		//#endregion
 
-		#region Move
-		public static void MoveFiles(IEnumerable<FileInfo> sources, DirectoryInfo destinationDirectory)
+		#region Transfer
+		public static void TransferFiles(IEnumerable<FileInfo> sources, DirectoryInfo destinationDirectory, TransferSettings settings)
 		{
 			IEnumerable<(FileInfo, FileInfo)> GenerateMoves()
 			{
@@ -116,9 +116,9 @@ namespace MultithreadedFileOperations
 
 			}
 
-			Task.Run(() => MoveFiles(GenerateMoves()));
+			Task.Run(() => TransferFiles(GenerateMoves(), settings));
 		}
-		public static void MoveFiles(IEnumerable<FileInfo> sources, DirectoryInfo destinationDirectory, string namePrefix)
+		public static void TransferFiles(IEnumerable<FileInfo> sources, DirectoryInfo destinationDirectory, string namePrefix, TransferSettings transferSettings)
 		{
 			string name;
 			string extension;
@@ -135,16 +135,16 @@ namespace MultithreadedFileOperations
 				}
 			}
 
-			Task.Run(() => MoveFiles(GenerateMoves()));
+			Task.Run(() => TransferFiles(GenerateMoves(), transferSettings));
 		}
-		public static void MoveFiles(IEnumerable<(FileInfo source, FileInfo destination)> moves)
+		public static void TransferFiles(IEnumerable<(FileInfo source, FileInfo destination)> moves, TransferSettings transferSettings)
 		{
 			var t = new Task(() =>
 			{
 				foreach (var move in moves)
 				{
 					var cts = new CancellationTokenSource();
-					var job = new FileMoveJob(new FileTransferJobArguments(move.source, move.destination), cts.Token);
+					var job = new FileTransferJob(new FileTransferArguments(move.source, move.destination, transferSettings), cts.Token);
 
 					JobsPool.StartNew(job, cts);
 				}
@@ -157,7 +157,7 @@ namespace MultithreadedFileOperations
 		}
 
 
-		public static void MoveDirectories(IEnumerable<DirectoryInfo> sources, DirectoryInfo destinationDirectory)
+		public static void TransferDirectories(IEnumerable<DirectoryInfo> sources, DirectoryInfo destinationDirectory, TransferSettings settings)
 		{
 			IEnumerable<(DirectoryInfo, DirectoryInfo)> GenerateMoves()
 			{
@@ -165,9 +165,9 @@ namespace MultithreadedFileOperations
 					yield return (source, new DirectoryInfo(Path.Combine(destinationDirectory.FullName, source.Name)));
 			}
 
-			Task.Run(() => MoveDirectories(GenerateMoves()));
+			Task.Run(() => TransferDirectories(GenerateMoves(), settings));
 		}
-		public static void MoveDirectories(IEnumerable<DirectoryInfo> sources, DirectoryInfo destinationDirectory, string namePrefix)
+		public static void TransferDirectories(IEnumerable<DirectoryInfo> sources, DirectoryInfo destinationDirectory, string namePrefix, TransferSettings settings)
 		{
 			IEnumerable<(DirectoryInfo, DirectoryInfo)> GenerateMoves()
 			{
@@ -180,16 +180,16 @@ namespace MultithreadedFileOperations
 				}
 			}
 
-			Task.Run(() => MoveDirectories(GenerateMoves()));
+			Task.Run(() => TransferDirectories(GenerateMoves(), settings));
 		}
-		public static void MoveDirectories(IEnumerable<(DirectoryInfo source, DirectoryInfo destination)> moves)
+		public static void TransferDirectories(IEnumerable<(DirectoryInfo source, DirectoryInfo destination)> moves, TransferSettings settings)
 		{
 			var t = new Task(() =>
 			{
 				foreach (var move in moves)
 				{
 					var cts = new CancellationTokenSource();
-					var job = new DirectoryMoveJob(new DirectoryTransferJobArguments(move.source, move.destination), cts.Token);
+					var job = new DirectoryTransferJob(new DirectoryTransferArguments(move.source, move.destination, settings), cts.Token);
 
 					JobsPool.StartNew(job, cts);
 				}

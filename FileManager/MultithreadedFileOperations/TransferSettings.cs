@@ -4,10 +4,9 @@ using System.Text;
 
 namespace MultithreadedFileOperations
 {
-	public enum JobType
+	public enum TransferSettings
 	{
-		FileTransfer,
-		Delete,
-		DirTransfer
+		None = 0x0000_0000,
+		DeleteOriginal = 0x0000_0001,
 	}
 }

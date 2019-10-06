@@ -1,6 +1,6 @@
 ﻿namespace FileManager
 {
-	partial class CopyMoveArgsView
+	partial class TransferArgsView
 	{
 		/// <summary> 
 		/// Required designer variable.

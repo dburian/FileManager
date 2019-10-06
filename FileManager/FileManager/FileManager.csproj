@@ -84,6 +84,9 @@
     <Compile Include="ChangeDirectoryCommandFactory.cs" />
     <Compile Include="CommandParser.cs" />
     <Compile Include="CopyCommandFactory.cs" />
+    <Compile Include="ITransferCommand.cs" />
+    <Compile Include="JobTypeDescription.cs" />
+    <Compile Include="IJobViewExtensions.cs" />
     <Compile Include="TransferDirectoryIntoFileException.cs" />
     <Compile Include="DeleteCommand.cs" />
     <Compile Include="DeleteCommandFactory.cs" />
@@ -308,6 +311,7 @@
     <EmbeddedResource Include="UnderlinePanel.resx">
       <DependentUpon>UnderlinePanel.cs</DependentUpon>
     </EmbeddedResource>
+    <None Include=".editorconfig" />
     <None Include="app.manifest" />
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">

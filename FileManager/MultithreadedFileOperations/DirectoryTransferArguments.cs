@@ -5,18 +5,21 @@ using System.IO;
 
 namespace MultithreadedFileOperations
 {
-	public struct DirectoryTransferJobArguments : IJobArguments, ITransferJobArguments
+	public struct DirectoryTransferArguments : IJobArguments, ITransferJobArguments
 	{
-		public DirectoryTransferJobArguments(DirectoryInfo from, DirectoryInfo to)
+		public DirectoryTransferArguments(DirectoryInfo from, DirectoryInfo to, TransferSettings settings)
 		{
 			From = from;
 			To = to;
+			Settings = settings;
 		}
 
 		public DirectoryInfo From { get; }
 		public DirectoryInfo To { get; }
+		public TransferSettings Settings { get; }
 
 		FileSystemInfo ITransferJobArguments.From { get => From; }
 		FileSystemInfo ITransferJobArguments.To { get => To; }
+		TransferSettings ITransferJobArguments.Settings { get => Settings; }
 	}
 }

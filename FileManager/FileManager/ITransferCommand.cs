@@ -6,13 +6,8 @@ using System.Threading.Tasks;
 
 namespace FileManager
 {
-	struct MoveCommand : ITransferCommand
+	interface ITransferCommand : ICommand
 	{
-		public MoveCommand(string to)
-		{
-			To = to;
-		}
-
-		public string To { get; }
+		string To { get; }
 	}
 }

@@ -1,4 +1,6 @@
-﻿using System;
+﻿#define TEST
+
+using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.IO;
 using MultithreadedFileOperations;
@@ -26,8 +28,8 @@ namespace MultithreadedFileOperationsTests
 		public void RunSynchronously()
 		{
 			var ctSource = new CancellationTokenSource();
-			var cpJob = new FileCopyJob(
-				new FileTransferJobArguments(state.ExistingFiles[0], state.NonExistingFiles[0]),
+			var cpJob = new FileTransferJob(
+				new FileTransferArguments(state.ExistingFiles[0], state.NonExistingFiles[0], TransferSettings.None),
 				ctSource.Token,
 				state.OnExceptionDebugPrint,
 				state.OnProgressDebugPrint
@@ -43,13 +45,13 @@ namespace MultithreadedFileOperationsTests
 		[TestMethod]
 		public void RunAsynchronously()
 		{
-			FileCopyJob[] jobs = new FileCopyJob[state.NonExistingFiles.Length];
+			FileTransferJob[] jobs = new FileTransferJob[state.NonExistingFiles.Length];
 			var ctSource = new CancellationTokenSource();
 
 			for (int i = 0; i < state.NonExistingFiles.Length; i++)
 			{
-				jobs[i] = new FileCopyJob(
-					new FileTransferJobArguments(state.ExistingFiles[0], state.NonExistingFiles[i]),
+				jobs[i] = new FileTransferJob(
+					new FileTransferArguments(state.ExistingFiles[0], state.NonExistingFiles[i], TransferSettings.None),
 					ctSource.Token,
 					state.OnExceptionDebugPrint,
 					state.OnProgressDebugPrint
@@ -76,8 +78,8 @@ namespace MultithreadedFileOperationsTests
 		public void SourceFileDoesNotExist()
 		{
 			var ctSource = new CancellationTokenSource();
-			var cpJob = new FileCopyJob(
-				new FileTransferJobArguments(state.NonExistingFiles[0], state.NonExistingFiles[1]),
+			var cpJob = new FileTransferJob(
+				new FileTransferArguments(state.NonExistingFiles[0], state.NonExistingFiles[1], TransferSettings.None),
 				ctSource.Token,
 				 state.OnExceptionDebugPrint,
 				 state.OnProgressDebugPrint
@@ -87,7 +89,7 @@ namespace MultithreadedFileOperationsTests
 			{
 				cpJob.Run();
 			}
-			catch (FileCopyException e)
+			catch (FileTransferException e)
 			{
 				state.ExceptionThrown = true;
 				Assert.IsTrue(e.InnerException is FileNotFoundException);
@@ -103,8 +105,8 @@ namespace MultithreadedFileOperationsTests
 			File.WriteAllText(state.NonExistingFiles[0].FullName, "Oh this suddenly exists..");
 
 			var ctSource = new CancellationTokenSource();
-			var cpJob = new FileCopyJob(
-				new FileTransferJobArguments(state.ExistingFiles[0], state.NonExistingFiles[0]),
+			var cpJob = new FileTransferJob(
+				new FileTransferArguments(state.ExistingFiles[0], state.NonExistingFiles[0], TransferSettings.None),
 				ctSource.Token,
 				state.OnExceptionDebugPrint,
 				state.OnProgressDebugPrint
@@ -114,7 +116,7 @@ namespace MultithreadedFileOperationsTests
 			{
 				cpJob.Run();
 			}
-			catch (FileCopyException e)
+			catch (FileTransferException e)
 			{
 				state.ExceptionThrown = true;
 				Assert.IsTrue(e.InnerException is IOException);
@@ -131,8 +133,8 @@ namespace MultithreadedFileOperationsTests
 			bool threwException = false;
 
 			var ctSource = new CancellationTokenSource();
-			FileCopyJob job = new FileCopyJob(
-				new FileTransferJobArguments(state.ExistingFiles[0], state.NonExistingFiles[0]),
+			FileTransferJob job = new FileTransferJob(
+				new FileTransferArguments(state.ExistingFiles[0], state.NonExistingFiles[0], TransferSettings.None),
 				ctSource.Token,
 				state.OnExceptionDebugPrint,
 				state.OnProgressDebugPrint
@@ -160,8 +162,8 @@ namespace MultithreadedFileOperationsTests
 		{
 			File.WriteAllText(state.NonExistingFiles[0].FullName, "Oh this suddenly exists..");
 			var ctSource = new CancellationTokenSource();
-			FileCopyJob job = new FileCopyJob(
-				new FileTransferJobArguments(state.ExistingFiles[0], state.NonExistingFiles[0]),
+			FileTransferJob job = new FileTransferJob(
+				new FileTransferArguments(state.ExistingFiles[0], state.NonExistingFiles[0], TransferSettings.None),
 				ctSource.Token,
 				state.OnExceptionDebugPrint,
 				state.OnProgressDebugPrint
@@ -190,8 +192,8 @@ namespace MultithreadedFileOperationsTests
 		{
 			CancellationTokenSource cts = new CancellationTokenSource();
 
-			var job = new FileCopyJob(
-				new FileTransferJobArguments(state.ExistingFiles[0], state.NonExistentFileWithoutRights),
+			var job = new FileTransferJob(
+				new FileTransferArguments(state.ExistingFiles[0], state.NonExistentFileWithoutRights, TransferSettings.None),
 				cts.Token,
 				state.OnExceptionDebugPrint,
 				state.OnProgressDebugPrint
@@ -201,7 +203,7 @@ namespace MultithreadedFileOperationsTests
 			{
 				job.Run();
 			}
-			catch (FileCopyException e)
+			catch (FileTransferException e)
 			{
 				state.ExceptionThrown = true;
 				Assert.IsTrue(e.InnerException is UnauthorizedAccessException);
@@ -217,8 +219,8 @@ namespace MultithreadedFileOperationsTests
 			using (var fs = new FileStream(state.ExistingFiles[0].FullName, FileMode.Append))
 			{
 				var ctSource = new CancellationTokenSource();
-				var cpJob = new FileCopyJob(
-					new FileTransferJobArguments(state.ExistingFiles[0], state.NonExistingFiles[0]),
+				var cpJob = new FileTransferJob(
+					new FileTransferArguments(state.ExistingFiles[0], state.NonExistingFiles[0], TransferSettings.None),
 					ctSource.Token,
 					state.OnExceptionDebugPrint,
 					state.OnProgressDebugPrint
@@ -227,7 +229,7 @@ namespace MultithreadedFileOperationsTests
 				try
 				{
 					cpJob.Run();
-				}catch(FileCopyException e)
+				}catch(FileTransferException e)
 				{
 					state.ExceptionThrown = true;
 					Assert.IsTrue(e.InnerException is IOException);

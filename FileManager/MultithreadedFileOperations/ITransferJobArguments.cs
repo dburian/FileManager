@@ -9,5 +9,6 @@ namespace MultithreadedFileOperations
 	{
 		FileSystemInfo From { get; }
 		FileSystemInfo To { get; }
+		TransferSettings Settings { get; }
 	}
 }
