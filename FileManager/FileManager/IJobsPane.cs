@@ -1,15 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace FileManager
+﻿namespace FileManager
 {
-	interface IJobsPane : IPane
+	internal interface IJobsPane : IPane
 	{
 		int JobsInProgress { get; set; }
 		int JobsQueued { get; set; }
-		int JobsSelected { get; set; }
 	}
 }

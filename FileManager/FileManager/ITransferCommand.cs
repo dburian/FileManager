@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace FileManager
+﻿namespace FileManager
 {
-	interface ITransferCommand : ICommand
+	internal interface ITransferCommand : ICommand
 	{
 		string To { get; }
 	}

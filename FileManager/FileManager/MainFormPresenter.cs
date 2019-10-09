@@ -1,25 +1,25 @@
-﻿using System;
+﻿using HelperExtensionLibrary;
+using MultithreadedFileOperations;
+using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.IO;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using System.Diagnostics;
-using System.IO;
-using HelperExtensionLibrary;
-using MultithreadedFileOperations;
 
 namespace FileManager
 {
-	class MainFormPresenter : IDisposable
+	/// <summary>
+	/// Controls the main form through IMainForm interface.
+	/// </summary>
+	internal class MainFormPresenter : IDisposable
 	{
-		IPanePresenter _leftPresenter;
-		IPanePresenter _rightPresenter;
-		bool _commandPromptInFocus = false;
-		PaneArea _paneInFocusArea;
-		bool _fullScreenMode = false;
-
-		IMainForm form;
+		private IPanePresenter _leftPresenter;
+		private IPanePresenter _rightPresenter;
+		private CommandPromptPresenter _commandPresenter;
+		private bool _commandPromptInFocus = false;
+		private PaneArea _paneInFocusArea;
+		private bool _fullScreenMode = false;
+		private readonly IMainForm form;
 
 		public MainFormPresenter(IMainForm mainForm)
 		{
@@ -30,55 +30,71 @@ namespace FileManager
 
 			PaneAreaInFocus = PaneArea.Left;
 
-			//TODO: event assignment to property
 			CommandPromptPresenter = new CommandPromptPresenter(form.CommandPrompt);
-			CommandPromptPresenter.ProcessCommand += ProcessCommand;
 
 			form.ProcessKeyPressEvent += ProcessKeyPress;
+			form.FormClosing += OnFormClosing;
 		}
 
-
-		// Panes
-		IPanePresenter LeftPresenter
+		/// <summary>
+		/// Sets left pane and disposes old one.
+		/// </summary>
+		private IPanePresenter LeftPresenter
 		{
 			get => _leftPresenter;
 			set
 			{
 				if (_leftPresenter != null)
 				{
-					_leftPresenter.ProcessComand -= ProcessCommand;
+					_leftPresenter.InvokeCommand -= ProcessCommand;
 					_leftPresenter.Dispose();
-				} 
+				}
 
 				_leftPresenter = value;
 
 				form.LeftPane = _leftPresenter.GetViewsControl();
-				_leftPresenter.ProcessComand += ProcessCommand;
+				_leftPresenter.InvokeCommand += ProcessCommand;
 			}
 		}
-		IPanePresenter RightPresenter
+
+		/// <summary>
+		/// Sets right pane and disposes old one.
+		/// </summary>
+		private IPanePresenter RightPresenter
 		{
 			get => _rightPresenter;
 			set
 			{
 				if (_rightPresenter != null)
 				{
-					_rightPresenter.ProcessComand -= ProcessCommand;
+					_rightPresenter.InvokeCommand -= ProcessCommand;
 					_rightPresenter.Dispose();
 				}
-				
+
 				_rightPresenter = value;
 
 				form.RightPane = _rightPresenter.GetViewsControl();
-				_rightPresenter.ProcessComand += ProcessCommand;
+				_rightPresenter.InvokeCommand += ProcessCommand;
 			}
 		}
 
-		// Command prompt
-		CommandPromptPresenter CommandPromptPresenter { get; set; }
+		/// <summary>
+		/// Sets the command prompt.
+		/// </summary>
+		private CommandPromptPresenter CommandPromptPresenter
+		{
+			get => _commandPresenter;
+			set
+			{
+				_commandPresenter = value;
+				_commandPresenter.ProcessCommand += ProcessCommand;
+			}
+		}
 
-		// To switch focus
-		bool CommandPromptInFocus
+		/// <summary>
+		/// Switches focus between command prompt and panes.
+		/// </summary>
+		private bool CommandPromptInFocus
 		{
 			get => _commandPromptInFocus;
 			set
@@ -89,7 +105,11 @@ namespace FileManager
 				CommandPromptPresenter.SetFocusOnView(_commandPromptInFocus);
 			}
 		}
-		PaneArea PaneAreaInFocus
+
+		/// <summary>
+		/// Helper property to easily switch focus between the two panes.
+		/// </summary>
+		private PaneArea PaneAreaInFocus
 		{
 			get => _paneInFocusArea;
 			set
@@ -101,8 +121,10 @@ namespace FileManager
 		}
 
 
-		// View change properties
-		bool FullScreenMode
+		/// <summary>
+		/// Changes arrangement of the main form, making the current pane in focus span across the whole window.
+		/// </summary>
+		private bool FullScreenMode
 		{
 			get => _fullScreenMode;
 			set
@@ -117,12 +139,17 @@ namespace FileManager
 					case PaneArea.Right:
 						form.FullScreenRight = _fullScreenMode;
 						break;
+
+					default:
+						throw new ArgumentOutOfRangeException();
 				}
 			}
 		}
 
-		// Helper properties
-		IPanePresenter PanePresenterInFocus
+		/// <summary>
+		/// Pointer to the current presenter in focus
+		/// </summary>
+		private IPanePresenter PanePresenterInFocus
 		{
 			get
 			{
@@ -134,11 +161,16 @@ namespace FileManager
 						return RightPresenter;
 
 					default:
-						return LeftPresenter;
+						throw new ArgumentOutOfRangeException();
 				}
 			}
 		}
-		IPanePresenter OtherPresenter {
+
+		/// <summary>
+		/// Pointer to the currently inactive presenter (not in focus)
+		/// </summary>
+		private IPanePresenter OtherPanePresenter
+		{
 			get
 			{
 				switch (PaneAreaInFocus)
@@ -147,6 +179,7 @@ namespace FileManager
 						return RightPresenter;
 					case PaneArea.Right:
 						return LeftPresenter;
+
 					default:
 						throw new ArgumentOutOfRangeException();
 				}
@@ -158,36 +191,60 @@ namespace FileManager
 			_leftPresenter.Dispose();
 		}
 
+		private void OnFormClosing(object sender, FormClosingEventArgs e)
+		{
+			JobsPool.CancelAllAndDispose();
+			Dispose();
+		}
+
 		/// <summary>
-		/// Causes to switch focus from the pane currently in focus to that specified by argument area.
+		/// Causes to switch focus from the pane currently in focus to that specified by <paramref name="area"/>.
 		/// </summary>
-		/// <param name="area">Area of the pane to which the focus is swithed.</param>
-		void SwitchPaneInFocus(PaneArea area)
+		/// <param name="area">Area of the pane to which the focus should be switched.</param>
+		private void SwitchPaneInFocus(PaneArea area)
 		{
 			if (FullScreenMode)
 			{
 				FullScreenMode = false;
 				PaneAreaInFocus = area;
 				FullScreenMode = true;
-			} else
+			}
+			else
 			{
 				PaneAreaInFocus = area;
 			}
 		}
 
 		/// <summary>
-		/// Causes to switch focus to the next pane.
+		/// Causes to switch focus to the other pane.
 		/// </summary>
-		void SwitchPaneInFocus() => SwitchPaneInFocus(PaneAreaInFocus == PaneArea.Left ? PaneArea.Right : PaneArea.Left);
-		
-		bool ProcessKeyPress(InputKey keyChar)
+		private void SwitchPaneInFocus()
 		{
-			if (CommandPromptPresenter.ProcessKeyPress(keyChar) || PanePresenterInFocus.ProcessKeyPress(keyChar)) return true;
+			SwitchPaneInFocus(PaneAreaInFocus == PaneArea.Left ? PaneArea.Right : PaneArea.Left);
+		}
 
+		/// <summary>
+		/// Processes key press.
+		/// </summary>
+		/// <param name="keyChar">Key that was pressd</param>
+		/// <returns>True if the event was handled, false otherwise.</returns>
+		private bool ProcessKeyPress(InputKey keyChar)
+		{
 			if (keyChar == ':' || keyChar == '/')
 			{
 				if (!CommandPromptInFocus)
+				{
 					CommandPromptInFocus = true;
+				}
+			}
+
+			if (CommandPromptInFocus && CommandPromptPresenter.ProcessKeyPress(keyChar))
+			{
+				return true;
+			}
+
+			if (!CommandPromptInFocus && PanePresenterInFocus.ProcessKeyPress(keyChar))
+			{
 				return true;
 			}
 
@@ -198,11 +255,12 @@ namespace FileManager
 				return true;
 			}
 			if (keyChar == Keys.Escape)
-			{		
+			{
 				if (CommandPromptInFocus)
+				{
 					CommandPromptInFocus = false;
-
-				//TODO: maybe remember the previous filepresenter?
+					return true;
+				}
 				else if (PanePresenterInFocus.GetType() == typeof(SearchResultPanePresenter))
 				{
 					switch (PaneAreaInFocus)
@@ -213,18 +271,26 @@ namespace FileManager
 						case PaneArea.Right:
 							RightPresenter = Config.DefaultRightPanePresenter;
 							break;
+
+						default:
+							throw new ArgumentOutOfRangeException();
 					}
 
 					PanePresenterInFocus.SetFocusOnView(true);
+					return true;
 				}
-
-				return true;
 			}
 
 			return false;
 		}
-		bool ProcessCommand(ICommand cmd)
-		{	
+
+		/// <summary>
+		/// Processes command.
+		/// </summary>
+		/// <param name="cmd">Command to be processed.</param>
+		/// <returns>True if the event was handled, false otherwise.</returns>
+		private bool ProcessCommand(ICommand cmd)
+		{
 			if (cmd.GetType() == typeof(CopyCommand))
 			{
 				HandleTransferCommand((CopyCommand)cmd);
@@ -276,100 +342,151 @@ namespace FileManager
 				ErrorFormFactory.CreateFromException(new UnknownCommandException((UnknownCommand)cmd)).ShowAsDialog();
 				return true;
 			}
-			else return false;
+			else
+			{
+				return false;
+			}
 		}
 
 		#region CommandHanlders
-		void HandleTransferCommand(ITransferCommand cmd)
+		private void HandleTransferCommand(ITransferCommand cmd)
 		{
-			void WithoutTargetName(IEnumerable<FileSystemInfo> infos, DirectoryInfo targetDir)
+			if (!FilesPaneActiveCheck(cmd, out FilesPanePresenter activeFilesPresenter))
 			{
-				List<FileInfo> fileInfos;
-				List<DirectoryInfo> dirInfos;
-				SeparateFileSystemInfos(infos, out fileInfos, out dirInfos);
-
-				Operations.TransferFiles(fileInfos, targetDir, TransferSettings.None);
-				Operations.TransferDirectories(dirInfos, targetDir, TransferSettings.None);
-
-				ResetCommandPromptIfNecessary();
-			}
-
-			FilesPanePresenter activeFilesPresenter;
-
-			if (cmd.To == null)
-			{
-				FilesPanePresenter inactiveFilesPresenter;
-				if (!BothPanesAreFilePanesCheck(cmd, out activeFilesPresenter, out inactiveFilesPresenter)) return;
-
-				WithoutTargetName(activeFilesPresenter.GetSelectedFileSystemInfos(), inactiveFilesPresenter.CurrentDir);
-				return;
-			}
-
-			if (!FilesPaneActiveCheck(cmd, out activeFilesPresenter)) return;
-
-			if (cmd.To.IsDirectoryPath())
-			{
-				WithoutTargetName(activeFilesPresenter.GetSelectedFileSystemInfos(), new DirectoryInfo(cmd.To));
 				return;
 			}
 
 			var selectedInfos = activeFilesPresenter.GetSelectedFileSystemInfos();
-			var files = new List<FileInfo>();
-
-			foreach (var info in selectedInfos)
+			if (selectedInfos == null)
 			{
-				if (info.GetType() == typeof(FileInfo))
-					files.Add((FileInfo)info);
-				else
-				{
-					ErrorFormFactory.CreateFromException(new TransferDirectoryIntoFileException(cmd, info.FullName, cmd.To)).ShowAsDialog();
-					return;
-				}
+				ErrorFormFactory.CreateFromException(new FileOrDirectoryMustBeSelectedException(cmd)).ShowAsDialog();
+				return;
 			}
 
 			var transferSettings = cmd.GetType() == typeof(CopyCommand) ? TransferSettings.None : TransferSettings.DeleteOriginal;
 
-			var dest = new FileInfo(cmd.To);
-			if (files.Count == 1)
-				Operations.TransferFiles((files[0], dest).AsSingleEnumerable(), transferSettings);
-			else
-				Operations.TransferFiles(files, dest.Directory, dest.Name, transferSettings);
-
-			ResetCommandPromptIfNecessary();
-		}
-		void HandleDeleteCommand(DeleteCommand cmd)
-		{
-			IEnumerable<FileSystemInfo> targets = null;
-			if (cmd.TargetPath == null)
+			if (cmd.To == null)
 			{
-				FilesPanePresenter activeFilesPresenter;
-				if (!FilesPaneActiveCheck(cmd, out activeFilesPresenter)) return;
+				if (!BothPanesAreFilePanesCheck(cmd, out activeFilesPresenter, out FilesPanePresenter inactiveFilesPresenter))
+				{
+					return;
+				}
 
-				targets = activeFilesPresenter.GetSelectedFileSystemInfos();
-			}else
-			{
-				if (cmd.TargetPath.IsDirectoryPath())
-					targets = new DirectoryInfo(cmd.TargetPath).AsSingleEnumerable();
-				else
-					targets = new FileInfo(cmd.TargetPath).AsSingleEnumerable();
+				WithoutTargetName(selectedInfos, inactiveFilesPresenter.CurrentDir);
+				return;
 			}
 
-			Operations.DeleteFileSystemNodes(targets);
+			SeparateFileSystemInfos(selectedInfos, out List<FileInfo> files, out List<DirectoryInfo> dirs);
+
+			var destPath = RootIfIsnt(cmd.To, activeFilesPresenter.CurrentDir.FullName);
+			if (Format.IsDirectoryPath(destPath))
+			{
+				var destDir = new DirectoryInfo(destPath);
+				if (files.Count == 0)
+				{
+					if (destDir.Exists)
+					{
+						Task.Run(() => Operations.TransferDirectories(dirs, destDir, transferSettings));
+					}
+					else if (dirs.Count == 1)
+					{
+						Task.Run(() => Operations.TransferDirectories((dirs[0], destDir).AsSingleEnumerable(), transferSettings));
+					}
+					else
+					{
+						Task.Run(() => Operations.TransferDirectories(dirs, destDir.Parent, destDir.Name, transferSettings));
+					}
+
+					ResetCommandPromptIfNecessary();
+					return;
+				}
+				else
+				{
+					WithoutTargetName(selectedInfos, new DirectoryInfo(destPath));
+					return;
+				}
+			}
+
+			if (dirs.Count > 0)
+			{
+				ErrorFormFactory.CreateFromException(new TransferDirectoryIntoFileException(cmd, dirs[0].FullName, destPath)).ShowAsDialog();
+				return;
+			}
+
+			var destFile = new FileInfo(destPath);
+			if (files.Count == 1)
+			{
+				Task.Run(() => Operations.TransferFiles((files[0], destFile).AsSingleEnumerable(), transferSettings));
+			}
+			else
+			{
+				Task.Run(() => Operations.TransferFiles(files, destFile.Directory, destFile.Name, transferSettings));
+			}
+
+			ResetCommandPromptIfNecessary();
+
+
+			void WithoutTargetName(IEnumerable<FileSystemInfo> infos, DirectoryInfo targetDir)
+			{
+				SeparateFileSystemInfos(infos, out List<FileInfo> fileInfos, out List<DirectoryInfo> dirInfos);
+
+				Task.Run(() => Operations.TransferFiles(fileInfos, targetDir, transferSettings));
+				Task.Run(() => Operations.TransferDirectories(dirInfos, targetDir, transferSettings));
+
+				ResetCommandPromptIfNecessary();
+			}
+		}
+
+		private void HandleDeleteCommand(DeleteCommand cmd)
+		{
+			IEnumerable<FileSystemInfo> targets;
+			if (cmd.TargetPath == null)
+			{
+				if (!FilesPaneActiveCheck(cmd, out FilesPanePresenter activeFilesPresenter))
+				{
+					return;
+				}
+
+				targets = activeFilesPresenter.GetSelectedFileSystemInfos();
+				if (targets == null)
+				{
+					ErrorFormFactory.CreateFromException(new FileOrDirectoryMustBeSelectedException(cmd)).ShowAsDialog();
+					return;
+				}
+			}
+			else
+			{
+				var root = (PanePresenterInFocus as FilesPanePresenter)?.CurrentDir?.FullName;
+				if (root == null)
+				{
+					root = @"C:\";
+				}
+
+				var path = RootIfIsnt(cmd.TargetPath, root);
+				if (Format.IsDirectoryPath(path))
+				{
+					targets = new DirectoryInfo(path).AsSingleEnumerable();
+				}
+				else
+				{
+					targets = new FileInfo(path).AsSingleEnumerable();
+				}
+			}
+
+			Task.Run(() => Operations.DeleteFileSystemNodes(targets));
 
 			ResetCommandPromptIfNecessary();
 		}
-		void HandleSearchCommand(SearchCommand cmd)
-		{
-			string currentPath;
-			var activeFilesPane = PanePresenterInFocus as FilesPanePresenter;
-			if (activeFilesPane == null)
-				currentPath = @"C:\";
-			else
-				currentPath = activeFilesPane.CurrentDir.FullName;
 
-			DirectoryInfo searchedDir = Path.IsPathRooted(cmd.SearchedDirectory) ?
-				new DirectoryInfo(cmd.SearchedDirectory) :
-				new DirectoryInfo(Path.Combine(currentPath, cmd.SearchedDirectory));
+		private void HandleSearchCommand(SearchCommand cmd)
+		{
+			var root = (PanePresenterInFocus as FilesPanePresenter)?.CurrentDir?.FullName;
+			if (root == null)
+			{
+				root = @"C:\";
+			}
+
+			DirectoryInfo searchedDir = new DirectoryInfo(RootIfIsnt(cmd.SearchedDirectory, root));
 
 			if (!searchedDir.Exists)
 			{
@@ -395,9 +512,10 @@ namespace FileManager
 
 			ResetCommandPromptIfNecessary();
 		}
-		void HandleChangeDirectoryCommand(ChangeDirectoryCommand cmd)
+
+		private void HandleChangeDirectoryCommand(ChangeDirectoryCommand cmd)
 		{
-			FilesPanePresenter activePresenter = null;
+			FilesPanePresenter activePresenter;
 			if (PanePresenterInFocus.GetType() != typeof(FilesPanePresenter))
 			{
 				activePresenter = new FilesPanePresenter(new FilesPane(), new DirectoryInfo(Config.DefaultPath));
@@ -414,14 +532,11 @@ namespace FileManager
 				}
 			}
 			else
+			{
 				activePresenter = (FilesPanePresenter)PanePresenterInFocus;
+			}
 
-			DirectoryInfo dirInfo;
-
-			if (!Path.IsPathRooted(cmd.TargetPath))
-				dirInfo = new DirectoryInfo(Path.Combine(activePresenter.CurrentDir.FullName, cmd.TargetPath));
-			else
-				dirInfo = new DirectoryInfo(cmd.TargetPath);
+			var dirInfo = new DirectoryInfo(RootIfIsnt(cmd.TargetPath, activePresenter.CurrentDir.FullName));
 
 			if (!dirInfo.Exists)
 			{
@@ -432,17 +547,19 @@ namespace FileManager
 			activePresenter.ChangeDirectory(dirInfo);
 			ResetCommandPromptIfNecessary();
 		}
-		void HandleSortCommand(SortCommand cmd)
+
+		private void HandleSortCommand(SortCommand cmd)
 		{
-			FilesPanePresenter activeFilesPresenter;
-			if (!FilesPaneActiveCheck(cmd, out activeFilesPresenter)) return;
+			if (!FilesPaneActiveCheck(cmd, out FilesPanePresenter activeFilesPresenter))
+			{
+				return;
+			}
 
-			var sortCmd = (SortCommand)cmd;
-
-			activeFilesPresenter.SetEntrySortOrder(sortCmd.Comparer);
+			activeFilesPresenter.SetEntrySortOrder(cmd.Comparer);
 			ResetCommandPromptIfNecessary();
 		}
-		void HandleLeftCommand(LeftCommand cmd)
+
+		private void HandleLeftCommand(LeftCommand cmd)
 		{
 			switch (cmd.Pane)
 			{
@@ -458,9 +575,10 @@ namespace FileManager
 
 			ResetCommandPromptIfNecessary();
 		}
-		void HandleRightCommand(RightCommand cmd)
+
+		private void HandleRightCommand(RightCommand cmd)
 		{
-			RightCommand rightCommand = (RightCommand)cmd;
+			RightCommand rightCommand = cmd;
 
 			switch (rightCommand.Pane)
 			{
@@ -469,6 +587,7 @@ namespace FileManager
 					break;
 				case Panes.Jobs:
 					RightPresenter = Config.DefaultJobsPanePresenter;
+
 					break;
 				default:
 					throw new InvalidDataException("MainFormPresenter.ProcessCommand....RightCommand");
@@ -476,15 +595,19 @@ namespace FileManager
 
 			ResetCommandPromptIfNecessary();
 		}
-  
-		void ResetCommandPromptIfNecessary()
+
+		private void ResetCommandPromptIfNecessary()
 		{
-			if (!CommandPromptInFocus) return;
+			if (!CommandPromptInFocus)
+			{
+				return;
+			}
 
 			CommandPromptPresenter.ResetCommandPrompt();
 			CommandPromptInFocus = false;
 		}
-		bool FilesPaneActiveCheck(ICommand cmd, out FilesPanePresenter activeFilesPresenter)
+
+		private bool FilesPaneActiveCheck(ICommand cmd, out FilesPanePresenter activeFilesPresenter)
 		{
 			activeFilesPresenter = PanePresenterInFocus as FilesPanePresenter;
 			if (activeFilesPresenter == null)
@@ -495,10 +618,11 @@ namespace FileManager
 
 			return true;
 		}
-		bool BothPanesAreFilePanesCheck(ICommand cmd, out FilesPanePresenter activeFilesPresenter, out FilesPanePresenter inactiveFilesPresenter)
+
+		private bool BothPanesAreFilePanesCheck(ICommand cmd, out FilesPanePresenter activeFilesPresenter, out FilesPanePresenter inactiveFilesPresenter)
 		{
 			activeFilesPresenter = PanePresenterInFocus as FilesPanePresenter;
-			inactiveFilesPresenter = OtherPresenter as FilesPanePresenter;
+			inactiveFilesPresenter = OtherPanePresenter as FilesPanePresenter;
 			if (activeFilesPresenter == null || inactiveFilesPresenter == null)
 			{
 				ErrorFormFactory.CreateFromException(new BothPanesNeedToBeFilesPaneException(cmd)).ShowAsDialog();
@@ -507,7 +631,8 @@ namespace FileManager
 
 			return true;
 		}
-		void SeparateFileSystemInfos(IEnumerable<FileSystemInfo> all, out List<FileInfo> files, out List<DirectoryInfo> dirs)
+
+		private static void SeparateFileSystemInfos(IEnumerable<FileSystemInfo> all, out List<FileInfo> files, out List<DirectoryInfo> dirs)
 		{
 			files = new List<FileInfo>();
 			dirs = new List<DirectoryInfo>();
@@ -515,10 +640,24 @@ namespace FileManager
 			foreach (var info in all)
 			{
 				if (info.GetType() == typeof(DirectoryInfo))
+				{
 					dirs.Add((DirectoryInfo)info);
+				}
 				else
+				{
 					files.Add((FileInfo)info);
+				}
 			}
+		}
+
+		private static string RootIfIsnt(string path, string root)
+		{
+			if (!Path.IsPathRooted(path))
+			{
+				return Path.Combine(root, path);
+			}
+
+			return path;
 		}
 		#endregion
 	}

@@ -1,76 +1,87 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Text;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using System.IO;
-using System.Collections.Concurrent;
-using System.Diagnostics;
 
 namespace MultithreadedFileOperations
 {
-	class SearchWrapper : ISearchView
+	/// <summary>
+	/// Search operation execution context.
+	/// </summary>
+	internal class SearchWrapper : ISearchView
 	{
-		const int MIN_FOUND_BATCH_LENGTH = 1;
-		const int MAX_FOUND_BATCH_LENGTH = 30 * MIN_FOUND_BATCH_LENGTH;
-
-		readonly FileSystemNodeSearch searchEngine;
-		readonly CancellationTokenSource cts;
-		readonly TaskScheduler IOScheduler;
-
-		BlockingCollection<FileSystemInfo> foundBuffer;
-
-		Consumer consumer;
+		private const int MIN_FOUND_BATCH_LENGTH = 1;
+		private const int MAX_FOUND_BATCH_LENGTH = 30 * MIN_FOUND_BATCH_LENGTH;
+		private readonly FileSystemNodeSearch searchEngine;
+		private readonly CancellationTokenSource cts;
+		private bool disposed;
+		private readonly BlockingCollection<FileSystemInfo> foundBuffer;
+		private readonly Consumer consumer;
 
 		public SearchWrapper(FileSystemNodeSearch searchEngine, CancellationTokenSource cts, Task task)
 		{
 			this.searchEngine = searchEngine;
 			this.cts = cts;
-			Task = task;
-
-			IOScheduler = TaskScheduler.FromCurrentSynchronizationContext();
+			ProducerTask = task;
 
 			foundBuffer = new BlockingCollection<FileSystemInfo>(MAX_FOUND_BATCH_LENGTH * 2);
 
-			searchEngine.ExceptionRise += OnExceptionRaise; 
+			searchEngine.ExceptionRise += OnExceptionRaise;
 			searchEngine.NodeFound += OnNodeFound;
-			Task.ContinueWith(_ => OnSearchDone(), new CancellationToken(), TaskContinuationOptions.DenyChildAttach, TaskScheduler.Default);
+			ProducerTask.ContinueWith(_ => OnSearchDone(), new CancellationToken(), TaskContinuationOptions.OnlyOnRanToCompletion | TaskContinuationOptions.DenyChildAttach, TaskScheduler.Default);
 
 			consumer = new Consumer(this);
 		}
 
-		public SearchSettings Settings { get => searchEngine.Settings; }
-		public Task Task { get; }
+		public SearchSettings Settings => searchEngine.Settings;
+		public Task ProducerTask { get; }
 
 		public event OnSearchDoneDelegate SearchDone;
 		public event OnExceptionRaiseDelegate ExceptionRaise;
 		public event OnFoundBatchFullDelegate FoundBatchFull
 		{
-			add
-			{
-				consumer.FoundBatchFull += value;
-			}
-			remove
-			{
-				consumer.FoundBatchFull -= value;
-			}
+			add => consumer.FoundBatchFull += value;
+			remove => consumer.FoundBatchFull -= value;
 		}
 
-		public void Stop()
+		/// <summary>
+		/// Cancels the search.
+		/// </summary>
+		public void Cancel()
 		{
 			cts.Cancel();
 			consumer.Stop();
 		}
-		public void Start() => Task.Start(TaskScheduler.Default);
+
+		/// <summary>
+		/// Starts the search.
+		/// </summary>
+		public void Start()
+		{
+			ProducerTask.Start(TaskScheduler.Default);
+		}
 
 		public void Dispose()
 		{
+			disposed = true;
+
+			searchEngine.ExceptionRise -= OnExceptionRaise;
+			searchEngine.NodeFound -= OnNodeFound;
+
 			cts.Cancel();
 			consumer.Dispose();
+			foundBuffer.Dispose();
 		}
- 
-		void OnNodeFound(FileSystemInfo nodeFound)
+
+		private void OnNodeFound(FileSystemInfo nodeFound)
 		{
+			if (disposed)
+			{
+				return;
+			}
+
 			if (foundBuffer.Count > MIN_FOUND_BATCH_LENGTH && Monitor.TryEnter(consumer.emptyingBuffer))
 			{
 				Monitor.Pulse(consumer.emptyingBuffer);
@@ -80,39 +91,44 @@ namespace MultithreadedFileOperations
 			foundBuffer.Add(nodeFound);
 		}
 
-		void OnExceptionRaise(FileOperationException e)
+		private void OnExceptionRaise(FileOperationException e)
 		{
+			if (disposed)
+			{
+				return;
+			}
+
 			ExceptionRaise?.Invoke(e);
 		}
 
-
-		void OnSearchDone()
+		private void OnSearchDone()
 		{
+			if (disposed)
+			{
+				return;
+			}
+
 			consumer.Flush();
-			consumer.Dispose();
 
 			SearchDone?.Invoke();
 		}
 
-
-
-		class Consumer : IDisposable
+		/// <summary>
+		/// Execution context of the consumer thread.
+		/// </summary>
+		private class Consumer : IDisposable
 		{
-			const int MIN_PAUSE_BETWEEN_BATCHES = 20;
-			const int MAX_PAUSE_BETWEEN_BATCHES = 800;
+			private const int MIN_PAUSE_BETWEEN_BATCHES = 20;
+			private const int MAX_PAUSE_BETWEEN_BATCHES = 800;
 
 			public object emptyingBuffer;
+			private bool poisonPill;
+			private int infosSent = 0;
+			private DateTime lastBatchTime;
+			private readonly Thread cleaningThread;
+			private readonly SearchWrapper producer;
 
-			volatile bool poisonPill;
-
-			int infosSent = 0;
-			DateTime lastBatchTime;
-			Thread cleaningThread;
-
-			SearchWrapper producer;
-
-
-			public Consumer(SearchWrapper producer) 
+			public Consumer(SearchWrapper producer)
 			{
 				emptyingBuffer = new object();
 
@@ -132,31 +148,16 @@ namespace MultithreadedFileOperations
 				cleaningThread.Join();
 			}
 
-			public void Flush()
-			{
-				lock (emptyingBuffer)
-				{
-					while (producer.foundBuffer.Count > 0 && !poisonPill)
-						ShipBatch();
-				}
-			}
-
-			public void Consume()
-			{
-				lock (emptyingBuffer)
-				{
-					while (!poisonPill)
-					{
-						while (producer.foundBuffer.Count < MIN_FOUND_BATCH_LENGTH && !poisonPill) Monitor.Wait(emptyingBuffer);
-						if (poisonPill) break;
-
-						ShipBatch();
-					}
-				}
-			}
-
+			/// <summary>
+			/// Stops the consumer thread.
+			/// </summary>
 			public void Stop()
 			{
+				if (!cleaningThread.IsAlive)
+				{
+					return;
+				}
+
 				poisonPill = true;
 
 				lock (emptyingBuffer)
@@ -165,14 +166,66 @@ namespace MultithreadedFileOperations
 				}
 			}
 
-			//Should be accessed only with emptyingBuffer locked...
-			void ShipBatch()
+			/// <summary>
+			/// Consumes all the findings.
+			/// </summary>
+			public void Flush()
 			{
-				if (!Monitor.IsEntered(emptyingBuffer)) throw new InvalidOperationException();
-				
-				int ms;
-				if (ShouldWait(out ms)) Thread.Sleep(ms);
-				if (poisonPill) return;
+				lock (emptyingBuffer)
+				{
+					while (producer.foundBuffer.Count > 0 && !poisonPill)
+					{
+						ShipBatch();
+					}
+				}
+			}
+
+			/// <summary>
+			/// Main consumer loop.
+			/// </summary>
+			public void Consume()
+			{
+				lock (emptyingBuffer)
+				{
+					while (!poisonPill)
+					{
+						while (producer.foundBuffer.Count < MIN_FOUND_BATCH_LENGTH && !poisonPill)
+						{
+							Monitor.Wait(emptyingBuffer);
+						}
+
+						if (poisonPill)
+						{
+							break;
+						}
+
+						ShipBatch();
+					}
+				}
+			}
+
+
+
+			/// <summary>
+			/// Consumes new findings, packs them, and ships them using the FoundBatchFull event when appropriate.
+			/// Should be accessed only with emtyingBuffer locked.
+			/// </summary>
+			private void ShipBatch()
+			{
+				if (!Monitor.IsEntered(emptyingBuffer))
+				{
+					throw new InvalidOperationException();
+				}
+
+				if (ShouldWait(out int ms))
+				{
+					Thread.Sleep(ms);
+				}
+
+				if (poisonPill)
+				{
+					return;
+				}
 
 				var batch = TakeBatch();
 
@@ -182,14 +235,19 @@ namespace MultithreadedFileOperations
 				infosSent += batch.Length;
 			}
 
-			//Should be accessed only with emptyingBuffer locked...
-			FileSystemInfo[] TakeBatch()
+			/// <summary>
+			/// Consumes batch until there are no new findings or batch is already at it's maximum length as set by MAX_FOUND_BATCH_LENGTH constant.
+			/// </summary>
+			/// <returns>Consumed batch of new findings</returns>
+			private FileSystemInfo[] TakeBatch()
 			{
-				if (!Monitor.IsEntered(emptyingBuffer)) throw new InvalidOperationException();
+				if (!Monitor.IsEntered(emptyingBuffer))
+				{
+					throw new InvalidOperationException();
+				}
 
 				var infosTaken = new List<FileSystemInfo>();
-				FileSystemInfo info;
-				while (producer.foundBuffer.TryTake(out info) && infosTaken.Count < MAX_FOUND_BATCH_LENGTH)
+				while (producer.foundBuffer.TryTake(out FileSystemInfo info) && infosTaken.Count < MAX_FOUND_BATCH_LENGTH)
 				{
 					infosTaken.Add(info);
 				}
@@ -197,9 +255,14 @@ namespace MultithreadedFileOperations
 				return infosTaken.ToArray();
 			}
 
-			bool ShouldWait(out int waitTime)
+			/// <summary>
+			/// Determines if the consumer should wait before shipping another batch. With slower devices may need to be adjusted.
+			/// </summary>
+			/// <param name="waitTime">How long should the consumer wait before shipping another batch.</param>
+			/// <returns>True if consumer should wait, false otherwise.</returns>
+			private bool ShouldWait(out int waitTime)
 			{
-				int shouldWait = infosSent <= 100 ? 
+				int shouldWait = infosSent <= 100 ?
 					MIN_PAUSE_BETWEEN_BATCHES :
 					MAX_PAUSE_BETWEEN_BATCHES;
 
@@ -207,7 +270,7 @@ namespace MultithreadedFileOperations
 				return waitTime > 0;
 			}
 
-			
+
 		}
 	}
 }

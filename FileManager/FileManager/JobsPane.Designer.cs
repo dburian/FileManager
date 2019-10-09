@@ -36,7 +36,6 @@
 			this.bottomInnerTablePanel = new System.Windows.Forms.TableLayoutPanel();
 			this.jobsInProgressLabel = new System.Windows.Forms.Label();
 			this.jobsQueuedLabel = new System.Windows.Forms.Label();
-			this.jobsSelectedLabel = new System.Windows.Forms.Label();
 			this.jobsLabel = new System.Windows.Forms.Label();
 			this.mainPanel.SuspendLayout();
 			this.bottomPanel.SuspendLayout();
@@ -45,7 +44,6 @@
 			// 
 			// mainPanel
 			// 
-			this.mainPanel.BackColor = System.Drawing.Color.White;
 			this.mainPanel.Controls.Add(this.jobsViewPanel);
 			this.mainPanel.Controls.Add(this.underlinePanel1);
 			this.mainPanel.Controls.Add(this.jobEntryHeader1);
@@ -61,6 +59,7 @@
 			// jobsViewPanel
 			// 
 			this.jobsViewPanel.Dock = System.Windows.Forms.DockStyle.Fill;
+			this.jobsViewPanel.AutoScroll = true;
 			this.jobsViewPanel.Location = new System.Drawing.Point(0, 49);
 			this.jobsViewPanel.Margin = new System.Windows.Forms.Padding(0);
 			this.jobsViewPanel.Name = "jobsViewPanel";
@@ -106,13 +105,11 @@
 			// bottomInnerTablePanel
 			// 
 			this.bottomInnerTablePanel.BackColor = System.Drawing.Color.White;
-			this.bottomInnerTablePanel.ColumnCount = 3;
-			this.bottomInnerTablePanel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 31.29742F));
-			this.bottomInnerTablePanel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 37.40516F));
-			this.bottomInnerTablePanel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 31.29742F));
+			this.bottomInnerTablePanel.ColumnCount = 2;
+			this.bottomInnerTablePanel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
+			this.bottomInnerTablePanel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
 			this.bottomInnerTablePanel.Controls.Add(this.jobsInProgressLabel, 0, 0);
 			this.bottomInnerTablePanel.Controls.Add(this.jobsQueuedLabel, 1, 0);
-			this.bottomInnerTablePanel.Controls.Add(this.jobsSelectedLabel, 2, 0);
 			this.bottomInnerTablePanel.Dock = System.Windows.Forms.DockStyle.Fill;
 			this.bottomInnerTablePanel.Font = new System.Drawing.Font("Consolas", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
 			this.bottomInnerTablePanel.Location = new System.Drawing.Point(0, 0);
@@ -147,18 +144,6 @@
 			this.jobsQueuedLabel.TabIndex = 1;
 			this.jobsQueuedLabel.Text = "0 jobs queued";
 			this.jobsQueuedLabel.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-			// 
-			// jobsSelectedLabel
-			// 
-			this.jobsSelectedLabel.AutoSize = true;
-			this.jobsSelectedLabel.Dock = System.Windows.Forms.DockStyle.Fill;
-			this.jobsSelectedLabel.Location = new System.Drawing.Point(219, 0);
-			this.jobsSelectedLabel.Margin = new System.Windows.Forms.Padding(0);
-			this.jobsSelectedLabel.Name = "jobsSelectedLabel";
-			this.jobsSelectedLabel.Size = new System.Drawing.Size(101, 34);
-			this.jobsSelectedLabel.TabIndex = 2;
-			this.jobsSelectedLabel.Text = "0 jobs selected";
-			this.jobsSelectedLabel.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
 			// 
 			// jobsLabel
 			// 
@@ -205,6 +190,5 @@
 		private System.Windows.Forms.Panel jobsViewPanel;
 		private UnderlinePanel underlinePanel1;
 		private JobEntryHeader jobEntryHeader1;
-		private System.Windows.Forms.Label jobsSelectedLabel;
 	}
 }

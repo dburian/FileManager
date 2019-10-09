@@ -1,20 +1,22 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Windows.Forms;
+﻿using MultithreadedFileOperations;
+using System;
 using System.IO;
-using MultithreadedFileOperations;
+using System.Linq;
+using System.Windows.Forms;
 
 namespace FileManager
 {
-	class SearchResultPanePresenter : IPanePresenter, IDisposable
+	/// <summary>
+	/// Controls SearchResultPane through ISrearchResultPane.
+	/// </summary>
+	internal class SearchResultPanePresenter : IPanePresenter, IDisposable
 	{
-		ISearchResultPane pane;
-		UnsortedEntriesHolder<FileSystemNodeEntry> entries;
+		private readonly ISearchResultPane pane;
+		private readonly UnsortedEntriesHolder<FileSystemNodeEntry> entries;
 
+		/// <summary>
+		/// Initializes SearchResultPanePresenter and starts the search.
+		/// </summary>
 		public SearchResultPanePresenter(ISearchResultPane pane, ISearchView search)
 		{
 			this.pane = pane;
@@ -23,11 +25,9 @@ namespace FileManager
 				HighlightingFilter = _ => false
 			};
 
-			TaskScheduler UIScheduler = TaskScheduler.FromCurrentSynchronizationContext();
-
 			Search = search;
-			Search.SearchDone += () => Task.Factory.StartNew(OnSearchDone, new CancellationToken(), TaskCreationOptions.None, UIScheduler);
-			Search.FoundBatchFull += (FileSystemInfo[] batch) => Task.Factory.StartNew(() => ProcessFoundBatch(batch), new CancellationToken(), TaskCreationOptions.None, UIScheduler);
+			Search.SearchDone += HandleSearchDone;
+			Search.FoundBatchFull += HandleBatchFound;
 
 			pane.Status = JobStatus.Waiting;
 			pane.SearchingName = SearchedName;
@@ -35,18 +35,27 @@ namespace FileManager
 			pane.InDirectory = SearchedDirectory.FullName;
 
 			Search.Start();
+			pane.Status = JobStatus.Running;
 		}
 
-		public event ProcessCommandDelegate ProcessComand;
+		public event ProcessCommandDelegate InvokeCommand;
 
-		public DirectoryInfo SearchedDirectory { get => Search.Settings.InDirectory; }
-		public string SearchedName { get => Search.Settings.Target.Name; }
+		public DirectoryInfo SearchedDirectory => Search.Settings.InDirectory;
+		public string SearchedName => Search.Settings.Target.Name;
 
-		ISearchView Search { get; }
+		private ISearchView Search { get; }
 
+		/// <summary>
+		/// Processes key press.
+		/// </summary>
+		/// <param name="pressedKey">Pressed key.</param>
+		/// <returns>True if the event was handled, false otherwise.</returns>
 		public bool ProcessKeyPress(InputKey pressedKey)
 		{
-			if (entries.ProcessKeyPress(pressedKey)) return true;
+			if (entries.ProcessKeyPress(pressedKey))
+			{
+				return true;
+			}
 
 			if (pressedKey == 'l' || pressedKey == Keys.Left || pressedKey == Keys.Enter)
 			{
@@ -54,15 +63,15 @@ namespace FileManager
 					entries.EntryInFocus.Info.FullName :
 					((FileInfo)entries.EntryInFocus.Info).DirectoryName;
 
-				Search.Stop();
+				Search.Cancel();
 
-				ProcessComand?.Invoke(new ChangeDirectoryCommand(parentDir));
+				InvokeCommand?.Invoke(new ChangeDirectoryCommand(parentDir));
 				return true;
 			}
 
 			if (pressedKey == Keys.Escape)
 			{
-				Search.Stop();
+				Search.Cancel();
 				pane.Status = JobStatus.Canceled;
 
 				return false;
@@ -70,7 +79,11 @@ namespace FileManager
 
 			return false;
 		}
-		public Control GetViewsControl() => pane.GetControl();
+		public Control GetViewsControl()
+		{
+			return pane.GetControl();
+		}
+
 		public void SetFocusOnView(bool inFocus)
 		{
 			pane.InFocus = inFocus;
@@ -78,38 +91,91 @@ namespace FileManager
 		}
 		public void Dispose()
 		{
-			Search.Stop();
+			Search.Cancel();
 			Search.Dispose();
 		}
 
-		void ProcessFoundBatch(FileSystemInfo[] foundBatch)
+		private void HandleBatchFound(FileSystemInfo[] batch)
 		{
-			if (entries.Count == 0) pane.Status = JobStatus.Running;
+			PaneBeginInvoke(ProcessFoundBatch, batch);
+		}
 
+		private void HandleSearchDone()
+		{
+			PaneBeginInvoke(OnSearchDone);
+		}
+
+		private void ProcessFoundBatch(FileSystemInfo[] foundBatch)
+		{
 			pane.Found += foundBatch.Length;
 			var newEntries = from info in foundBatch
-							 select FromInfoToEntry(info);
+							 select EntryFromInfo(info);
 
 			entries.AddRange(newEntries.ToArray());
 		}
-		void OnSearchExceptionRise(FileOperationException e)
+
+		private void OnSearchExceptionRise(FileOperationException e)
 		{
-			if (entries.Count == 0) pane.Status = JobStatus.Running;
+			if (entries.Count == 0)
+			{
+				pane.Status = JobStatus.Running;
+			}
 
 			entries.Add(new ErrorEntry(e.Message, e.InnerException.GetType().ToString()));
 		}
-		void OnSearchDone()
+
+		private void OnSearchDone()
 		{
 			if (pane.Status != JobStatus.Canceled)
+			{
 				pane.Status = JobStatus.Done;
+			}
 		}
 
-		FileSystemNodeEntry FromInfoToEntry(FileSystemInfo info)
+		private void PaneBeginInvoke<T>(Action<T> operation, T args)
+		{
+			if (pane.GetControl().IsDisposed)
+			{
+				return;
+			}
+
+			if (!pane.GetControl().IsHandleCreated)
+			{
+				pane.GetControl().HandleCreated += (object sender, EventArgs e) => operation(args);
+			}
+			else
+			{
+				pane.GetControl().BeginInvoke(operation, args);
+			}
+		}
+
+		private void PaneBeginInvoke(Action operation)
+		{
+			if (pane.GetControl().IsDisposed)
+			{
+				return;
+			}
+
+			if (!pane.GetControl().IsHandleCreated)
+			{
+				pane.GetControl().HandleCreated += (object sender, EventArgs e) => operation();
+			}
+			else
+			{
+				pane.GetControl().BeginInvoke(operation);
+			}
+		}
+
+		private FileSystemNodeEntry EntryFromInfo(FileSystemInfo info)
 		{
 			if (info.GetType() == typeof(FileInfo))
+			{
 				return new SearchResultFileEntry(SearchedDirectory.FullName) { Info = info };
+			}
 			else
+			{
 				return new SearchResultDirectoryEntry(SearchedDirectory.FullName) { Info = info };
+			}
 		}
 
 	}

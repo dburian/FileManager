@@ -1,16 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace FileManager
+﻿namespace FileManager
 {
-	class TransferDirectoryIntoFileException : ICommandException
+	internal class TransferDirectoryIntoFileException : ICommandException
 	{
-		ICommand cmd;
-		string dirPath;
-		string filePath;
+		private readonly ICommand cmd;
+		private readonly string dirPath;
+		private readonly string filePath;
 
 		public TransferDirectoryIntoFileException(ICommand cmd, string dirPath, string filePath)
 		{
@@ -18,18 +12,10 @@ namespace FileManager
 			this.dirPath = dirPath;
 			this.filePath = filePath;
 		}
-		public string Message 
-		{
-			get {
-				return cmd.GetType() == typeof(CopyCommand) ?
+		public string Message => cmd.GetType() == typeof(CopyCommand) ?
 					$"Cannot copy directory {dirPath} to file {filePath}." :
 					$"Cannot move directory {dirPath} to file {filePath}.";
-			}
-		}
 
-		public string Type 
-		{
-			get => "Transfer directory into file exception."; 
-		}
+		public string Type => "Transfer directory into file exception.";
 	}
 }

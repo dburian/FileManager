@@ -1,10 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.IO;
+﻿using System.IO;
 
 namespace MultithreadedFileOperations
 {
+	/// <summary>
+	/// Encapsulates all the needed information to execute DeleteJob.
+	/// </summary>
 	public struct DeleteJobArguments
 	{
 		public DeleteJobArguments(FileSystemInfo target)

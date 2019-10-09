@@ -1,25 +1,30 @@
-﻿using System;
+﻿using HelperExtensionLibrary;
+using System;
 using System.IO;
-using HelperExtensionLibrary;
 
 namespace FileManager
 {
-	//TODO: #cleanup - seal classes (not this one)
+	/// <summary>
+	/// Displayable entry representing a file in file system.
+	/// </summary>
 	public class FileEntry : FileSystemNodeEntry
 	{
-		FileInfo _info;
+		private FileInfo _info;
 
-		public override string EntryName { get => _info.GetOnlyName(); }
-		public override string EntryExt { get => _info.GetOnlyExtension(); }
-		public override long EntrySize { get => _info.Length; }
-		public override DateTime EntryCreated { get => _info.CreationTime; }
-		public override DateTime EntryModified { get => _info.LastWriteTime; }
+		public override string EntryName => _info.GetOnlyName();
+		public override string EntryExt => _info.GetOnlyExtension();
+		public override long EntrySize => _info.Length;
+		public override DateTime EntryCreated => _info.CreationTime;
+		public override DateTime EntryModified => _info.LastWriteTime;
 		public override FileSystemInfo Info
 		{
 			get => _info;
 			set
 			{
-				if (!value.Exists || value.GetType() != typeof(FileInfo)) throw new ArgumentException($"FileEntry(): FileInfo {value.FullName} is invalid");
+				if (!value.Exists || value.GetType() != typeof(FileInfo))
+				{
+					throw new ArgumentException($"FileEntry(): FileInfo {value.FullName} is invalid");
+				}
 
 				_info = (FileInfo)value;
 				Initialize();

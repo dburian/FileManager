@@ -43,7 +43,7 @@
 			this.jobEntryTablePanel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 100F));
 			this.jobEntryTablePanel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 100F));
 			this.jobEntryTablePanel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
-			this.jobEntryTablePanel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 60F));
+			this.jobEntryTablePanel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 80F));
 			this.jobEntryTablePanel.Controls.Add(this.jobTypeLabel, 0, 0);
 			this.jobEntryTablePanel.Controls.Add(this.jobProgressLabel, 3, 0);
 			this.jobEntryTablePanel.Controls.Add(this.jobStatusLabel, 1, 0);
@@ -95,12 +95,7 @@
 			// 
 			// JobEntry
 			// 
-			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
-			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-			this.AutoSize = true;
-			this.BackColor = System.Drawing.Color.White;
 			this.Controls.Add(this.jobEntryTablePanel);
-			this.Margin = new System.Windows.Forms.Padding(0);
 			this.MinimumSize = new System.Drawing.Size(0, 25);
 			this.Name = "JobEntry";
 			this.Size = new System.Drawing.Size(693, 50);

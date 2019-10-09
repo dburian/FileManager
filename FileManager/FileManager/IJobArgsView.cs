@@ -1,12 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
+﻿using System.Windows.Forms;
 
 namespace FileManager
 {
+	/// <summary>
+	/// Represents an view of arguments of some job.
+	/// </summary>
 	public interface IJobArgsView
 	{
 		Control GetControl();

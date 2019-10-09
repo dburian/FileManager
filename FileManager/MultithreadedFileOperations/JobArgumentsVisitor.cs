@@ -1,17 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace MultithreadedFileOperations
+﻿namespace MultithreadedFileOperations
 {
-	class JobArgumentsVisitor : IJobVisitor, IJobArgumentsView
+	/// <summary>
+	/// Implementation of visitor pattern. Extracts arguments from a job.
+	/// </summary>
+	internal class JobArgumentsVisitor : IJobVisitor, IJobArgumentsView
 	{
 		public FileTransferArguments FileTransferArguments { get; private set; }
 		public DirectoryTransferArguments DirectoryTransferArguments { get; private set; }
-
 		public DeleteJobArguments DeleteArguments { get; private set; }
 
-		
+
 		public void Visit(DirectoryTransferJob job)
 		{
 			DirectoryTransferArguments = job.Args;

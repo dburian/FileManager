@@ -1,16 +1,15 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace FileManager
 {
-	class ErrorFormPresenter
+	/// <summary>
+	/// Controls the ErrorForm through IErrorForm interface.
+	/// </summary>
+	internal class ErrorFormPresenter
 	{
-		IErrorForm form;
-		IErrorMessage errorMessage;
+		private readonly IErrorForm form;
+		private readonly IErrorMessage errorMessage;
 
 		public ErrorFormPresenter(IErrorForm form, IErrorMessage errorMessage)
 		{
@@ -23,9 +22,14 @@ namespace FileManager
 			errorMessage.OkButtonClicked += ProcessOkClick;
 		}
 
-		public DialogResult ShowAsDialog() => form.ShowDialog();
+		public DialogResult ShowAsDialog()
+		{
+			return form.ShowDialog();
+		}
 
-		void ProcessOkClick(object sender, EventArgs e) => form.Close();
-		
+		private void ProcessOkClick(object sender, EventArgs e)
+		{
+			form.Close();
+		}
 	}
 }

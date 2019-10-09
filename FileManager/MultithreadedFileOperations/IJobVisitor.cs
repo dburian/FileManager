@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace MultithreadedFileOperations
+﻿namespace MultithreadedFileOperations
 {
-	interface IJobVisitor
+	internal interface IJobVisitor
 	{
 		void Visit(FileTransferJob job);
 		void Visit(DeleteJob job);

@@ -1,17 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using HelperExtensionLibrary;
-
-namespace FileManager
+﻿namespace FileManager
 {
-	struct DeleteCommand : ICommand
+	internal struct DeleteCommand : ICommand
 	{
 		public DeleteCommand(string targetPath)
 		{
-			this.TargetPath = targetPath.GetCamelCasedPath();
+			TargetPath = targetPath;
 		}
 
 		public string TargetPath { get; }

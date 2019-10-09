@@ -32,10 +32,13 @@
 			// 
 			// AbstractEntry
 			// 
-			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
-			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
+			this.Margin = new System.Windows.Forms.Padding(0);
+			this.Padding = new System.Windows.Forms.Padding(1);
+			this.BackColor = System.Drawing.Color.White;
+			this.Dock = System.Windows.Forms.DockStyle.Top;
 			this.Name = "AbstractEntry";
-			this.Size = new System.Drawing.Size(300, 197);
+			this.Size = new System.Drawing.Size(1536, 197);
 			this.ResumeLayout(false);
 
 		}

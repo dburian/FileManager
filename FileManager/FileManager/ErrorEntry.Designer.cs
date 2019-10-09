@@ -64,14 +64,9 @@
 			// 
 			// ErrorEntry
 			// 
-			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
-			this.BackColor = System.Drawing.Color.White;
+			
 			this.Controls.Add(this.errorEntryTablePanel);
-			this.Margin = new System.Windows.Forms.Padding(0);
-			this.MaximumSize = new System.Drawing.Size(0, 18);
-			this.MinimumSize = new System.Drawing.Size(380, 18);
 			this.Name = "ErrorEntry";
-			this.Padding = new System.Windows.Forms.Padding(1);
 			this.Size = new System.Drawing.Size(380, 18);
 			this.errorEntryTablePanel.ResumeLayout(false);
 			this.ResumeLayout(false);

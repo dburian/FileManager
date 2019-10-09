@@ -1,30 +1,56 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading;
 
 namespace MultithreadedFileOperations
 {
-	class MoveFreezeLockSlim : IDisposable
+	/// <summary>
+	/// Slim synchronization primitive. Freeze lock rules out moving locks. There can be more threads moving at the same time.
+	/// </summary>
+	internal class MoveFreezeLockSlim : IDisposable
 	{
-		ReaderWriterLockSlim rwLock = new ReaderWriterLockSlim();
+		private readonly ReaderWriterLockSlim rwLock = new ReaderWriterLockSlim();
 
-		public int CurrentMoveCount { get => rwLock.CurrentReadCount; }
+		public int CurrentMoveCount => rwLock.CurrentReadCount;
 
-		public int WaitingMoveCount { get => rwLock.WaitingReadCount; }
-		public int WaitingFreezeCount { get => rwLock.WaitingWriteCount; }
+		public int WaitingMoveCount => rwLock.WaitingReadCount;
+		public int WaitingFreezeCount => rwLock.WaitingWriteCount;
 
-		public bool IsMoveLockHeld { get => rwLock.IsReadLockHeld; }
-		public bool IsFreezeLockHeld { get => rwLock.IsWriteLockHeld; }
+		public bool IsMoveLockHeld => rwLock.IsReadLockHeld;
+		public bool IsFreezeLockHeld => rwLock.IsWriteLockHeld;
 
-		public void EnterMoveLock() => rwLock.EnterReadLock();
-		public void ExitMoveLock() => rwLock.ExitReadLock();
-		public bool TryEnterMoveLock(int millisecondsTimeout) => rwLock.TryEnterReadLock(millisecondsTimeout);
+		public void EnterMoveLock()
+		{
+			rwLock.EnterReadLock();
+		}
 
-		public void EnterFreezeLock() => rwLock.EnterWriteLock();
-		public void ExitFreezeLock() => rwLock.ExitWriteLock();
-		public bool TryEnterFreezeLock(int millisecondsTimeout) => rwLock.TryEnterWriteLock(millisecondsTimeout);
+		public void ExitMoveLock()
+		{
+			rwLock.ExitReadLock();
+		}
 
-		public void Dispose() => rwLock.Dispose();
+		public bool TryEnterMoveLock(int millisecondsTimeout)
+		{
+			return rwLock.TryEnterReadLock(millisecondsTimeout);
+		}
+
+		public void EnterFreezeLock()
+		{
+			rwLock.EnterWriteLock();
+		}
+
+		public void ExitFreezeLock()
+		{
+			rwLock.ExitWriteLock();
+		}
+
+		public bool TryEnterFreezeLock(int millisecondsTimeout)
+		{
+			return rwLock.TryEnterWriteLock(millisecondsTimeout);
+		}
+
+		public void Dispose()
+		{
+			rwLock.Dispose();
+		}
 	}
 }

@@ -1,170 +1,214 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Collections.Concurrent;
-using System.Linq;
+using System.Collections.Generic;
+using System.Threading;
 
 namespace MultithreadedFileOperations
 {
+	/// <summary>
+	/// For library users provider of a view of running and queued jobs.
+	/// Internally takes care of running the operations and providing callbacks for each job change.
+	/// </summary>
 	public static class JobsPool
 	{
-		static MoveFreezeLockSlim jobsLock = new MoveFreezeLockSlim();
-		static Random UniqueGen = new Random();
+		internal static volatile bool jobsPoolDisposed = false;
+		private static readonly MoveFreezeLockSlim jobsLock = new MoveFreezeLockSlim();
+		private static int lastUsedId = 0;
+		private static readonly Worker worker = new Worker();
 
-		internal static volatile bool resettingProcedureStarted = false;
+		/// <summary>
+		/// Signlas to the workers, that there is some job in JobsQueue to execute.
+		/// </summary>
+		private static readonly AutoResetEvent queueNonEmpty = new AutoResetEvent(false);
 
-		static ConcurrentDictionary<int, IJobHandle> Jobs { get; set; } = new ConcurrentDictionary<int, IJobHandle>();
+		private static ConcurrentQueue<IJobHandle> JobsQueue { get; set; } = new ConcurrentQueue<IJobHandle>();
 
-		//Set from UI, called from ThreadPool
-		static event OnJobChangeDelegate JobChange;
-		static event OnJobsPoolExceptionDelegate PoolException;
+		//Set from GUI, called from ThreadPool or WorkerThread
+		private static event OnJobChangeDelegate JobChange;
 
-		internal static int StartNew(Job job, CancellationTokenSource cts)
+		#region From GUI
+
+		/// <summary>
+		/// Registers new jobs pane as a listener.
+		/// </summary>
+		/// <param name="jobChange">Delegate to be called on each subsequent job change</param>
+		/// <param name="jobsListToPopulate">Snapshot of enqueued jobs</param>
+		public static void RegisterNewJobsPane(OnJobChangeDelegate jobChange, out List<IJobView> jobsListToPopulate)
 		{
-			if (resettingProcedureStarted) return 0;
-
-			var task = new Task(job.Run, cts.Token);
-			IJobHandle handle = new JobWrapper(job, cts, task);
-
-			int id = AddJob(handle);
-
-			OnJobChange(handle.GetView(), JobChangeEvent.BeforeRun);
-
-			handle.Task.Start(TaskScheduler.Default);
-
-			return id;
-		}
-		internal static int StartNew(Job job, CancellationTokenSource cts, IEnumerable<int> idOfPreviousJobs)
-		{
-			if (resettingProcedureStarted) return 0;
-
-			List<Task> previousTasks = new List<Task>();
-			foreach (var jobId in idOfPreviousJobs)
+			jobsListToPopulate = null;
+			if (jobsPoolDisposed)
 			{
-				IJobHandle previousJob;
-				if (Jobs.TryGetValue(jobId, out previousJob))
-				{
-					previousTasks.Add(previousJob.Task);
-				}
+				return;
 			}
 
-			var startNewJob = new TaskCompletionSource<bool>();
-			previousTasks.Add(startNewJob.Task);
+			jobsLock.EnterFreezeLock();                         //----------Enter freeze lock
 
-			var task = Task.Factory.ContinueWhenAll(
-				previousTasks.ToArray(),
-				tasks => {
-					int i;
-					for (i = 0; i < tasks.Length; i++)
-					{
-						if (tasks[i].Status != TaskStatus.RanToCompletion) break;
-					}
+			using (var jobs = JobsQueue.GetEnumerator())
+			{
+				JobChange += jobChange;
 
-					if(i == tasks.Length) job.Run();
-				},
-				cts.Token,
-				TaskContinuationOptions.None,
-				TaskScheduler.Default
-			);
-			IJobHandle newJob = new JobWrapper(job, cts, task);
+				jobsLock.ExitFreezeLock();                      //----------Exit freeze lock
 
-			int id = AddJob(newJob);
-
-			OnJobChange(newJob.GetView(), JobChangeEvent.BeforeRun);
-			startNewJob.SetResult(true);
-
-			return id;
+				jobsListToPopulate = new List<IJobView>();
+				while (jobs.MoveNext())
+				{
+					jobsListToPopulate.Add(jobs.Current.GetView());
+				}
+			}
 		}
 
-
-		static int AddJob(IJobHandle jobHandle)
+		/// <summary>
+		/// Sings out or unregisters old jobs pane as a listener.
+		/// </summary>
+		/// <param name="jobChange">Delegate to be removed from job change event</param>
+		public static void SignOutJobsPane(OnJobChangeDelegate jobChange)
 		{
-			int id = UniqueGen.Next();
+			if (jobsPoolDisposed)
+			{
+				return;
+			}
 
+			JobChange -= jobChange;
+		}
+
+		/// <summary>
+		/// Cancels all enqueued and running jobs and disposes whole JobsPool class.
+		/// </summary>
+		public static void CancelAllAndDispose()
+		{
+			jobsLock.EnterFreezeLock();
+			jobsPoolDisposed = true;
+
+			foreach (var job in JobsQueue)
+			{
+				job.Dispose();
+			}
+
+			jobsLock.ExitFreezeLock();
+
+			worker.Cancel();
+
+			//In the future, if there are more workers, it should be made sure to Set() the event until there are no workers running.
+			queueNonEmpty.Set();
+
+			worker.Dispose();
+
+			jobsLock.Dispose();
+		}
+		#endregion
+
+		/// <summary>
+		/// Enqueues new job(operation) to be executed.
+		/// </summary>
+		/// <param name="job">Job to be executed</param>
+		/// <param name="cts">CancellationTokenSource bound with the provided jobs</param>
+		/// <returns>Unique id of the enqueued job</returns>
+		internal static int EnqueueNew(Job job, CancellationTokenSource cts)
+		{
+			if (jobsPoolDisposed)
+			{
+				return 0;
+			}
+
+			IJobHandle handle = new JobWrapper(job, cts, ++lastUsedId) { LastStatus = JobStatus.Waiting };
+
+			OnJobChange(handle.GetView(), JobChangeEvent.Enqueued);
+			AddJob(handle);
+
+			return handle.Id;
+		}
+
+		private static void AddJob(IJobHandle jobHandle)
+		{
 			jobsLock.EnterMoveLock();                                       //------------EnterLock
 
-			while (id == 0 || !Jobs.TryAdd(id, jobHandle))
-				id = UniqueGen.Next();
+			JobsQueue.Enqueue(jobHandle);
 
 			jobsLock.ExitMoveLock();                                        //------------ExitLock	
 
-			jobHandle.Id = id;
+
 			jobHandle.JobChange += OnJobChange;
-			jobHandle.Task.ContinueWith(_ => RemoveJob(jobHandle), new CancellationToken(), TaskContinuationOptions.None, TaskScheduler.Default);
 
-			return id;
-		}
-		static void RemoveJob(IJobHandle jobHandle)
-		{
-			if (jobHandle.Task.Status != TaskStatus.Canceled) OnJobChange(jobHandle.GetView(), JobChangeEvent.AfterCompleted);
-			else OnJobChange(jobHandle.GetView(), JobChangeEvent.Canceled);
-
-			jobsLock.EnterMoveLock();
-
-			// If this fails, this jobHandle was somehow already removed
-			if (!Jobs.TryRemove(jobHandle.Id, out jobHandle))
-			{
-				PoolException?.Invoke(new InvalidOperationException("JobsPool.RemoveJob: Somehow a job was removed twice from the pool.\nPlease wait while the JobsPool resets."));
-				Task.Run(UIThreadSafe.CancelAllAndReset);
-			}
-
-			jobsLock.ExitMoveLock();
+			queueNonEmpty.Set();
 		}
 
-		static void OnJobChange(IJobView changedJob, JobChangeEvent changeEvent)
+		private static void OnJobChange(IJobView changedJob, JobChangeEvent changeEvent)
 		{
 			JobChange?.Invoke(changedJob, changeEvent);
 		}
 
-		static void CancelAll()
+		/// <summary>
+		/// Execution class. Dequeues a job from JobsQueue and executes it.
+		/// </summary>
+		private class Worker : IDisposable
 		{
-			resettingProcedureStarted = true;
+			private readonly CancellationTokenSource cts;
+			private IJobHandle currentJob;
+			private readonly Thread workerThread;
+			private CancellationToken ct;
 
-			while (Jobs.Count > 0)
+			public Worker()
 			{
-				foreach (var jobHandle in Jobs.Values)
-					if (!jobHandle.Task.IsCanceled) jobHandle.Cancel();
+				cts = new CancellationTokenSource();
+				ct = cts.Token;
 
-				//If this code is executed from thread pool, sleep so that this thread can be used to cleanup jobs
-				if (TaskScheduler.Current == TaskScheduler.Default)
-					Thread.Sleep(500);
+				workerThread = new Thread(Start);
+				workerThread.Start();
 			}
 
-			resettingProcedureStarted = false;
-		}
-
-		//TODO: *Refactor* reorder the code so the classes are last
-		//Called only from UI thread
-		public static class UIThreadSafe
-		{
-
-			public static void RegisterForExceptions(OnJobsPoolExceptionDelegate onJobsPoolException)
+			/// <summary>
+			/// Cancels currently executing job, disposes it and shuts down the main execution loop.
+			/// </summary>
+			public void Cancel()
 			{
-				PoolException += onJobsPoolException;
+				cts.Cancel();
+				currentJob?.Cancel();
 			}
 
-			public static void RegisterNewJobsPane(OnJobChangeDelegate jobChange, out List<IJobView> jobsListToPopulate)
+			public void Dispose()
 			{
-				jobsLock.EnterFreezeLock();
+				Cancel();
 
-				JobChange += jobChange;
+				if (workerThread.ThreadState != System.Threading.ThreadState.Unstarted)
+				{
+					workerThread.Join();
+				}
 
-				jobsListToPopulate = new List<IJobView>(Jobs.Select(pair => pair.Value.GetView()));
-
-				jobsLock.ExitFreezeLock();
+				cts.Dispose();
 			}
 
-			public static void SignOutJobsPane(OnJobChangeDelegate jobChange)
+			/// <summary>
+			/// Starts the main execution loop.
+			/// </summary>
+			public void Start()
 			{
-				JobChange -= jobChange;
-			}
+				while (!ct.IsCancellationRequested)
+				{
+					jobsLock.EnterMoveLock();
+					while (!JobsQueue.TryDequeue(out currentJob))
+					{
+						jobsLock.ExitMoveLock();
+						queueNonEmpty.WaitOne();
+						if (ct.IsCancellationRequested)
+						{
+							return;
+						}
+
+						jobsLock.EnterMoveLock();
+					}
+					jobsLock.ExitMoveLock();
 
 
-			public static void CancelAllAndReset()
-			{
-				Task.Run(JobsPool.CancelAll);
+					OnJobChange(currentJob.GetView(), JobChangeEvent.BeforeRun);
+
+					currentJob.Run();
+					if (currentJob.LastStatus != JobStatus.Canceled && currentJob.LastStatus != JobStatus.Error)
+					{
+						OnJobChange(currentJob.GetView(), JobChangeEvent.AfterCompleted);
+					}
+
+					currentJob.Dispose();
+				}
 			}
 		}
 	}

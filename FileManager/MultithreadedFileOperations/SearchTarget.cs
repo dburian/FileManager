@@ -1,11 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using System.IO;
-using HelperExtensionLibrary;
 
 namespace MultithreadedFileOperations
 {
+	/// <summary>
+	/// Represents a file system node which is looked for.
+	/// </summary>
 	public class SearchTarget : IEquatable<FileInfo>, IEquatable<DirectoryInfo>
 	{
 
@@ -14,27 +14,65 @@ namespace MultithreadedFileOperations
 			Name = fileSystemNode;
 		}
 
-		public string Name { get; private set; }
+		public string Name { get; }
 
-		public static bool operator==(SearchTarget target, FileInfo fileInfo) => target.Equals(fileInfo);
-		public static bool operator !=(SearchTarget target, FileInfo fileInfo) => !target.Equals(fileInfo);
+		public static bool operator ==(SearchTarget target, FileInfo fileInfo)
+		{
+			return object.ReferenceEquals(target, null) ? false : target.Equals(fileInfo);
+		}
 
-		public static bool operator ==(SearchTarget target, DirectoryInfo dirInfo) => target.Equals(dirInfo);
-		public static bool operator !=(SearchTarget target, DirectoryInfo dirInfo) => !target.Equals(dirInfo);
+		public static bool operator !=(SearchTarget target, FileInfo fileInfo)
+		{
+			return object.ReferenceEquals(target, null) ? true : !target.Equals(fileInfo);
+		}
 
-		public static bool operator ==(FileInfo fileInfo, SearchTarget target) => target.Equals(fileInfo);
-		public static bool operator !=(FileInfo fileInfo, SearchTarget target) => !target.Equals(fileInfo);
+		public static bool operator ==(SearchTarget target, DirectoryInfo dirInfo)
+		{
+			return object.ReferenceEquals(target, null) ? false : target.Equals(dirInfo);
+		}
 
-		public static bool operator ==(DirectoryInfo dirInfo, SearchTarget target) => target.Equals(dirInfo);
-		public static bool operator !=(DirectoryInfo dirInfo, SearchTarget target) => !target.Equals(dirInfo);
+		public static bool operator !=(SearchTarget target, DirectoryInfo dirInfo)
+		{
+			return object.ReferenceEquals(target, null) ? true : !target.Equals(dirInfo);
+		}
+
+		public static bool operator ==(FileInfo fileInfo, SearchTarget target)
+		{
+			return object.ReferenceEquals(target, null) ? false : target.Equals(fileInfo);
+		}
+
+		public static bool operator !=(FileInfo fileInfo, SearchTarget target)
+		{
+			return object.ReferenceEquals(target, null) ? true : !target.Equals(fileInfo);
+		}
+
+		public static bool operator ==(DirectoryInfo dirInfo, SearchTarget target)
+		{
+			return object.ReferenceEquals(target, null) ? false : target.Equals(dirInfo);
+		}
+
+		public static bool operator !=(DirectoryInfo dirInfo, SearchTarget target)
+		{
+			return object.ReferenceEquals(target, null) ? true : !target.Equals(dirInfo);
+		}
 
 		public bool Equals(FileInfo other)
 		{
+			if (other == null)
+			{
+				return false;
+			}
+
 			return other.Name.IndexOf(Name, StringComparison.OrdinalIgnoreCase) >= 0;
 		}
 
 		public bool Equals(DirectoryInfo other)
 		{
+			if (other == null)
+			{
+				return false;
+			}
+
 			return other.Name.IndexOf(Name, StringComparison.OrdinalIgnoreCase) >= 0;
 		}
 
@@ -42,11 +80,17 @@ namespace MultithreadedFileOperations
 		{
 			var fileI = obj as FileInfo;
 
-			if (fileI != null) return Equals(fileI);
+			if (fileI != null)
+			{
+				return Equals(fileI);
+			}
 
 			var dirI = obj as DirectoryInfo;
 
-			if (dirI != null) return Equals(dirI);
+			if (dirI != null)
+			{
+				return Equals(dirI);
+			}
 
 			return base.Equals(obj);
 		}

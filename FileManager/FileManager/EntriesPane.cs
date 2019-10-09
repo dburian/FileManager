@@ -1,14 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
-using System.Diagnostics;
+﻿using System.Windows.Forms;
 
 namespace FileManager
 {
-	public abstract class EntriesPane<T> : UserControl, IPane where T: AbstractEntry
+	/// <summary>
+	/// Base to all the panes which show entries.
+	/// </summary>
+	/// <typeparam name="T">Entry type.</typeparam>
+	public abstract class EntriesPane<T> : UserControl, IPane where T : AbstractEntry
 	{
 		public abstract ScrollableControl ViewPanel { get; }
 		public abstract bool InFocus { get; set; }
@@ -31,8 +29,12 @@ namespace FileManager
 		public virtual void AddEntry(T entry)
 		{
 			ViewPanel.Controls.Add(entry);
-			ViewPanel.Controls.SetChildIndex(entry, ViewPanel.Controls.Count -1);
-			entry.Dock = DockStyle.Top;
+			ViewPanel.Controls.SetChildIndex(entry, 0);
+		}
+		public virtual void AddEntryToTop(T entry)
+		{
+			ViewPanel.Controls.Add(entry);
+			ViewPanel.Controls.SetChildIndex(entry, ViewPanel.Controls.Count - 1);
 		}
 		public virtual void RemoveEntry(T entry)
 		{

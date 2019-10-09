@@ -1,32 +1,29 @@
 ﻿#define TEST
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using MultithreadedFileOperations;
+using System;
 using System.Diagnostics;
 using System.IO;
-using System.Security;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace MultithreadedFileOperationsTests
 {
 	[TestClass]
 	public class DirectoryCopyJobTests
 	{
-		IOTestState state = new IOTestState();
+		private readonly IOTestState state = new IOTestState();
 
 		[TestInitialize]
 		public void BeforeTest()
-		{	
+		{
 			try
 			{
 				state.Init();
 			}
-			catch(Exception e)
+			catch (Exception e)
 			{
 				Debug.WriteLine("Test Init Exception...");
 				Debug.WriteLine(e);
@@ -39,10 +36,9 @@ namespace MultithreadedFileOperationsTests
 			var cts = new CancellationTokenSource();
 			var job = new DirectoryTransferJob(
 				new DirectoryTransferArguments(state.ExistingEmptyDirectories[0], state.NonExistingDirectories[0], TransferSettings.None),
-				cts.Token,
-				state.OnExceptionDebugPrint,
 				state.OnProgressDebugPrint
-			);
+,
+				cts.Token);
 
 			job.Run();
 
@@ -55,10 +51,9 @@ namespace MultithreadedFileOperationsTests
 			var cts = new CancellationTokenSource();
 			var job = new DirectoryTransferJob(
 				new DirectoryTransferArguments(state.ExistingNonEmptyDirectories[0], state.NonExistingDirectories[0], TransferSettings.None),
-				cts.Token,
-				state.OnExceptionDebugPrint,
 				state.OnProgressDebugPrint
-			);
+,
+				cts.Token);
 
 			job.Run();
 
@@ -76,10 +71,9 @@ namespace MultithreadedFileOperationsTests
 			{
 				var job = new DirectoryTransferJob(
 					new DirectoryTransferArguments(state.ExistingNonEmptyDirectories[i], state.NonExistingDirectories[i], TransferSettings.None),
-					cts.Token,
-					state.OnExceptionDebugPrint,
 					state.OnProgressDebugPrint
-				);
+,
+					cts.Token);
 
 				tasks[i] = Task.Run(job.Run, cts.Token);
 			}
@@ -100,20 +94,19 @@ namespace MultithreadedFileOperationsTests
 			var cts = new CancellationTokenSource();
 			var job = new DirectoryTransferJob(
 				new DirectoryTransferArguments(state.ExistingNonEmptyDirectories[0], state.ExistingEmptyDirectories[0], TransferSettings.None),
-				cts.Token,
-				state.OnExceptionDebugPrint,
 				state.OnProgressDebugPrint
-			);
+,
+				cts.Token);
 
 			try
 			{
 				job.Run();
-			}catch(DirectoryTransferException e)
+			}
+			catch (DirectoryTransferException e)
 			{
 				state.ExceptionThrown = true;
 				Assert.IsTrue(e.InnerException is IOException);
 			}
-
 
 			Assert.IsTrue(state.ExceptionThrown);
 
@@ -127,10 +120,9 @@ namespace MultithreadedFileOperationsTests
 			var cts = new CancellationTokenSource();
 			var job = new DirectoryTransferJob(
 				new DirectoryTransferArguments(state.NonExistingDirectories[0], state.NonExistingDirectories[0], TransferSettings.None),
-				cts.Token,
-				state.OnExceptionDebugPrint,
 				state.OnProgressDebugPrint
-			);
+,
+				cts.Token);
 
 			try
 			{
@@ -154,18 +146,18 @@ namespace MultithreadedFileOperationsTests
 			var cts = new CancellationTokenSource();
 			var job = new DirectoryTransferJob(
 				new DirectoryTransferArguments(state.ExistingNonEmptyDirectories[0], state.NonExistingDirectories[0], TransferSettings.None),
-				cts.Token,
-				state.OnExceptionDebugPrint,
 				state.OnProgressDebugPrint
-			);
+,
+				cts.Token);
 			cts.Cancel();
 
 			var t = Task.Run(job.Run, cts.Token);
-			
+
 			try
 			{
 				t.Wait();
-			}catch(AggregateException ae)
+			}
+			catch (AggregateException ae)
 			{
 				state.ExceptionThrown = true;
 				ae.InnerExceptions.All(e => e is OperationCanceledException);
@@ -181,10 +173,9 @@ namespace MultithreadedFileOperationsTests
 			var cts = new CancellationTokenSource();
 			var job = new DirectoryTransferJob(
 				new DirectoryTransferArguments(state.ExistingNonEmptyDirectories[0], state.ExistingEmptyDirectories[0], TransferSettings.None),
-				cts.Token,
-				state.OnExceptionDebugPrint,
 				state.OnProgressDebugPrint
-			);
+,
+				cts.Token);
 
 			cts.Cancel();
 
@@ -210,10 +201,9 @@ namespace MultithreadedFileOperationsTests
 			var cts = new CancellationTokenSource();
 			var job = new DirectoryTransferJob(
 				new DirectoryTransferArguments(state.ExistingNonEmptyDirectories[0], state.NonExistingDirecoryWithoutWriteRights, TransferSettings.None),
-				cts.Token,
-				state.OnExceptionDebugPrint,
 				state.OnProgressDebugPrint
-			);
+,
+				cts.Token);
 
 			try
 			{
@@ -236,15 +226,15 @@ namespace MultithreadedFileOperationsTests
 			var cts = new CancellationTokenSource();
 			var job = new DirectoryTransferJob(
 				new DirectoryTransferArguments(state.ExistingDirecoryWithoutReadRights, state.NonExistingDirectories[0], TransferSettings.None),
-				cts.Token,
-				state.OnExceptionDebugPrint,
 				state.OnProgressDebugPrint
-			);
+,
+				cts.Token);
 
 			try
 			{
 				job.Run();
-			}catch(DirectoryTransferException e)
+			}
+			catch (DirectoryTransferException e)
 			{
 				state.ExceptionThrown = true;
 				Assert.IsTrue(e.InnerException is UnauthorizedAccessException);
@@ -258,20 +248,20 @@ namespace MultithreadedFileOperationsTests
 		[TestMethod]
 		public void OpenedHandle()
 		{
-			using(var fs = new FileStream(Path.Combine(Path.GetTempPath(), @"existingNonEmptyDirectory1\existingEmptyDirectory1\existingFile1.txt"), FileMode.Append))
+			using (var fs = new FileStream(Path.Combine(Path.GetTempPath(), @"existingNonEmptyDirectory1\existingEmptyDirectory1\existingFile1.txt"), FileMode.Append))
 			{
 				var cts = new CancellationTokenSource();
 				var job = new DirectoryTransferJob(
 					new DirectoryTransferArguments(state.ExistingNonEmptyDirectories[0], state.NonExistingDirectories[0], TransferSettings.None),
-					cts.Token,
-					state.OnExceptionDebugPrint,
 					state.OnProgressDebugPrint
-				);
+,
+					cts.Token);
 
 				try
 				{
 					job.Run();
-				}catch(DirectoryTransferException e)
+				}
+				catch (DirectoryTransferException e)
 				{
 					state.ExceptionThrown = true;
 					Assert.IsTrue(e.InnerException is DirectoryTransferException);

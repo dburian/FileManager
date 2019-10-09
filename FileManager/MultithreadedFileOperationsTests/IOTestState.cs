@@ -1,34 +1,29 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.IO;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using MultithreadedFileOperations;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Diagnostics;
+using System.IO;
 
 namespace MultithreadedFileOperationsTests
 {
 	[TestClass]
-	class IOTestState
+	internal class IOTestState
 	{
 
 		public bool ExceptionThrown { get; set; }
 
-		public string TmpPath { get => Path.GetTempPath(); }
-		public string DirWithoutRights { get => @"C:\Program Files"; }
+		public string TmpPath => Path.GetTempPath();
+		public string DirWithoutRights => @"C:\Program Files";
 
 		public FileInfo[] ExistingFiles { get; set; }
 		public FileInfo[] NonExistingFiles { get; set; }
-		public FileInfo NonExistentFileWithoutRights { get => new FileInfo(Path.Combine(DirWithoutRights, "fileWithoutRights.txt")); }
-		public FileInfo ExistentFileWithoutRights { get => new FileInfo(Path.Combine(DirWithoutRights, @"Git\LICENSE.txt")); }
+		public FileInfo NonExistentFileWithoutRights => new FileInfo(Path.Combine(DirWithoutRights, "fileWithoutRights.txt"));
+		public FileInfo ExistentFileWithoutRights => new FileInfo(Path.Combine(DirWithoutRights, @"Git\LICENSE.txt"));
 
 		public DirectoryInfo[] ExistingEmptyDirectories { get; set; }
 		public DirectoryInfo[] ExistingNonEmptyDirectories { get; set; }
 		public DirectoryInfo[] NonExistingDirectories { get; set; }
-		public DirectoryInfo ExistingDirecoryWithoutReadRights { get => new DirectoryInfo(@"C:\Documents and Settings"); }
-		public DirectoryInfo NonExistingDirecoryWithoutWriteRights { get => new DirectoryInfo(@"C:\Program Files\Hbbb"); }
+		public DirectoryInfo ExistingDirecoryWithoutReadRights => new DirectoryInfo(@"C:\Documents and Settings");
+		public DirectoryInfo NonExistingDirecoryWithoutWriteRights => new DirectoryInfo(@"C:\Program Files\Hbbb");
 
 		[ClassInitialize]
 		public void Init()
@@ -117,7 +112,10 @@ namespace MultithreadedFileOperationsTests
 		{
 			foreach (var file in ExistingFiles)
 			{
-				if (file == null) continue;
+				if (file == null)
+				{
+					continue;
+				}
 
 				file.Delete();
 				file.Refresh();
@@ -127,7 +125,10 @@ namespace MultithreadedFileOperationsTests
 
 			foreach (var file in NonExistingFiles)
 			{
-				if (file == null) continue;
+				if (file == null)
+				{
+					continue;
+				}
 
 				file.Delete();
 				file.Refresh();
@@ -138,27 +139,48 @@ namespace MultithreadedFileOperationsTests
 
 			foreach (var dir in ExistingEmptyDirectories)
 			{
-				if (dir == null) continue;
+				if (dir == null)
+				{
+					continue;
+				}
 
-				if (dir.Exists) dir.Delete(true);
+				if (dir.Exists)
+				{
+					dir.Delete(true);
+				}
+
 				dir.Refresh();
 				Assert.IsFalse(dir.Exists);
 			}
 
 			foreach (var dir in NonExistingDirectories)
 			{
-				if (dir == null) continue;
+				if (dir == null)
+				{
+					continue;
+				}
 
-				if (dir.Exists) dir.Delete(true);
+				if (dir.Exists)
+				{
+					dir.Delete(true);
+				}
+
 				dir.Refresh();
 				Assert.IsFalse(dir.Exists);
 			}
 
 			foreach (var dir in ExistingNonEmptyDirectories)
 			{
-				if (dir == null) continue;
+				if (dir == null)
+				{
+					continue;
+				}
 
-				if (dir.Exists) dir.Delete(true);
+				if (dir.Exists)
+				{
+					dir.Delete(true);
+				}
+
 				dir.Refresh();
 				Assert.IsFalse(dir.Exists);
 			}
@@ -175,7 +197,10 @@ namespace MultithreadedFileOperationsTests
 		public bool CheckDirectoryStructure(DirectoryInfo rootDir)
 		{
 			bool structureChecks = rootDir.Exists;
-			if (!structureChecks) return false;
+			if (!structureChecks)
+			{
+				return false;
+			}
 
 			foreach (var dir in ExistingEmptyDirectories)
 			{
@@ -191,7 +216,10 @@ namespace MultithreadedFileOperationsTests
 
 			var destDirPath = Path.Combine(rootDir.FullName, ExistingEmptyDirectories[0].Name);
 			structureChecks &= Directory.Exists(destDirPath);
-			if (!structureChecks) return false;
+			if (!structureChecks)
+			{
+				return false;
+			}
 
 			foreach (var file in ExistingFiles)
 			{
@@ -236,6 +264,6 @@ namespace MultithreadedFileOperationsTests
 			return root;
 		}
 
-		
+
 	}
 }

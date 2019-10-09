@@ -1,14 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace FileManager
 {
-	class LeftRightCommandFactory : ICommandFactory
+	internal class LeftRightCommandFactory : ICommandFactory
 	{
-		readonly string[] names;
+		private readonly string[] names;
 
 		public LeftRightCommandFactory()
 		{
@@ -23,15 +19,24 @@ namespace FileManager
 		{
 			parsedCmd = null;
 
-			string[] cmd;
-			if (!CommandParser.ParseWithStrArgs(stringInput, names, out cmd) || cmd.Length <= 1 || cmd.Length > 2)
+			if (!CommandParser.ParseWithStrArgs(stringInput, names, out string[] cmd) || cmd.Length <= 1 || cmd.Length > 2)
+			{
 				return false;
+			}
 
-			Panes pane;
-			if (!Enum.TryParse(cmd[1], true, out pane)) return false;
+			if (!Enum.TryParse(cmd[1], true, out Panes pane))
+			{
+				return false;
+			}
 
-			if (cmd[0] == "left") parsedCmd = new LeftCommand(pane);
-			else parsedCmd = new RightCommand(pane);
+			if (cmd[0] == "left")
+			{
+				parsedCmd = new LeftCommand(pane);
+			}
+			else
+			{
+				parsedCmd = new RightCommand(pane);
+			}
 
 			return true;
 		}

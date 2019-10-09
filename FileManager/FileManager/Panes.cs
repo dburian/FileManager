@@ -1,12 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace FileManager
+﻿namespace FileManager
 {
-	enum Panes
+	/// <summary>
+	/// All possible types of displayable panes.
+	/// </summary>
+	internal enum Panes
 	{
 		Files,
 		Jobs

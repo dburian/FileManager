@@ -81,7 +81,7 @@
 			this.targetArgLabel.Size = new System.Drawing.Size(336, 25);
 			this.targetArgLabel.TabIndex = 1;
 			this.targetArgLabel.Text = "C:/Users/David/Documents/Matfyz/somedoc.pdf";
-			this.targetArgLabel.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+			this.targetArgLabel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
 			// 
 			// DelArgs
 			// 

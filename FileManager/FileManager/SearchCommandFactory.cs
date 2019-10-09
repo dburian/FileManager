@@ -1,14 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace FileManager
+﻿namespace FileManager
 {
-	class SearchCommandFactory : ICommandFactory
+	internal class SearchCommandFactory : ICommandFactory
 	{
-		readonly string[] names;
+		private readonly string[] names;
 
 		public SearchCommandFactory()
 		{
@@ -23,8 +17,7 @@ namespace FileManager
 		{
 			parsedCmd = null;
 
-			string[] cmd;
-			if (CommandParser.ParseWithStrArgs(stringInput, names, out cmd) && cmd.Length > 1 && cmd.Length <= 3)
+			if (CommandParser.ParseWithStrArgs(stringInput, names, out string[] cmd) && cmd.Length > 1 && cmd.Length <= 3)
 			{
 				parsedCmd = cmd.Length == 2 ? new SearchCommand(cmd[1]) : new SearchCommand(cmd[1], cmd[2]);
 				return true;

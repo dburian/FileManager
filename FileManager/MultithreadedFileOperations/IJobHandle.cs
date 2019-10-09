@@ -1,17 +1,21 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace MultithreadedFileOperations
 {
-	interface IJobHandle
+	/// <summary>
+	/// Representation of an enqueued or running job
+	/// </summary>
+	internal interface IJobHandle : IDisposable
 	{
-		Task Task { get; }
-		int Id { get; set; }
+		int Id { get; }
+		JobStatus LastStatus { get; set; }
+		bool Disposed { get; }
 
 		event OnJobChangeDelegate JobChange;
 
+		/// <summary>
+		/// Executes the underlying job.
+		/// </summary>
 		void Run();
 		void Cancel();
 		IJobView GetView();

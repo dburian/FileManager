@@ -1,14 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace FileManager
+﻿namespace FileManager
 {
-	class CopyCommandFactory : ICommandFactory
+	internal class CopyCommandFactory : ICommandFactory
 	{
-		readonly string[] names;
+		private readonly string[] names;
 
 		public CopyCommandFactory()
 		{
@@ -22,8 +16,7 @@ namespace FileManager
 		public bool Parse(string stringInput, out ICommand parsedCmd)
 		{
 			parsedCmd = null;
-			string[] cmd;
-			if (CommandParser.ParseWithStrArgs(stringInput, names, out cmd) && cmd.Length <= 2)
+			if (CommandParser.ParseWithStrArgs(stringInput, names, out string[] cmd) && cmd.Length <= 2)
 			{
 				parsedCmd = cmd.Length == 1 ? new CopyCommand() : new CopyCommand(cmd[1]);
 				return true;

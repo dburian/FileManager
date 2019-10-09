@@ -1,14 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace FileManager
+﻿namespace FileManager
 {
-	class FullScreenCommandFactory : ICommandFactory
+	internal class FullScreenCommandFactory : ICommandFactory
 	{
-		readonly string[] names;
+		private readonly string[] names;
 
 		public FullScreenCommandFactory()
 		{

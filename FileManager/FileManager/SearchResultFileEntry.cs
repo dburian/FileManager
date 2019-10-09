@@ -1,21 +1,20 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using HelperExtensionLibrary;
 using System.IO;
-using HelperExtensionLibrary;
 
 namespace FileManager
 {
-	class SearchResultFileEntry : FileEntry
+	/// <summary>
+	/// Entry which represents a found file.
+	/// </summary>
+	internal class SearchResultFileEntry : FileEntry
 	{
-		string searchedDirPath;
+		private readonly string searchedDirPath;
 		public SearchResultFileEntry(string searchedDirPath)
 		{
 			this.searchedDirPath = searchedDirPath;
 		}
 
-		public override string EntryName { get => ((FileInfo)Info).GetRelativePath(searchedDirPath); }
+		public override string EntryName => ((FileInfo)Info).GetRelativePath(searchedDirPath);
+
 	}
 }

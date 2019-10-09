@@ -1,42 +1,40 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using System.IO;
 using System.Security;
+using System.Threading;
 
 namespace MultithreadedFileOperations
 {
-	//TODO: *Refactor* order usings and delete not used
-	class FileTransferJob : Job
+	/// <summary>
+	/// A cancelable file transfer operation.
+	/// </summary>
+	internal class FileTransferJob : Job
 	{
-
-		FileOperationException _firstException;
-
 		public FileTransferJob(FileTransferArguments args, CancellationToken ct)
 		{
 			Args = args;
 			this.ct = ct;
 			Type = JobType.FileTransfer;
 
-			_firstException = null;
 		}
-		public FileTransferJob(FileTransferArguments args, CancellationToken ct, OnExceptionRaiseDelegate onExceptionRaise, OnProgressChangeDelegate onProgressChange)
-			:this (args, ct)
+		public FileTransferJob(FileTransferArguments args, OnProgressChangeDelegate onProgressChange, CancellationToken ct)
+			: this(args, ct)
 		{
-			ExceptionRaise += onExceptionRaise;
 			ProgressChange += onProgressChange;
 		}
 
 		public override JobType Type { get; }
-		public FileTransferArguments Args { get; private set; }
+		public FileTransferArguments Args { get; }
 
+		/// <summary>
+		/// Executes the transfer.
+		/// </summary>
+		/// <exception cref="FileTransferException"/>
 		public override void Run()
 		{
 			ct.ThrowIfCancellationRequested();
 			bool copyFinished = false;
-			bool moveFinished = false;
+			bool transferFinished = false;
 
 			try
 			{
@@ -45,28 +43,33 @@ namespace MultithreadedFileOperations
 
 				ct.ThrowIfCancellationRequested();
 				if (Args.Settings == TransferSettings.DeleteOriginal)
+				{
 					Args.From.Delete();
+				}
 
 				OnProgressChange(100f);
-				moveFinished = true;
+				transferFinished = true;
 			}
-			//TODO: some of these are ancestors of others
 			catch (Exception e) when (e is IOException | e is SecurityException | e is UnauthorizedAccessException)
 			{
-				var fileE = new FileTransferException(Args, e);
-				OnExceptionRaise(fileE);
-				throw fileE;
+				throw new FileTransferException(Args, e);
 			}
 			finally
 			{
 				//Rollback
 				Args.From.Refresh();
-				if (copyFinished && !moveFinished && Args.From.Exists) Args.To.Delete();
+				if (copyFinished && !transferFinished && Args.From.Exists)
+				{
+					Args.To.Delete();
+				}
 			}
-			
+
 		}
 
-		public override void Accept(IJobVisitor visitor) => visitor.Visit(this);
+		public override void Accept(IJobVisitor visitor)
+		{
+			visitor.Visit(this);
+		}
 
 		private void Copy()
 		{
@@ -74,6 +77,7 @@ namespace MultithreadedFileOperations
 			bool finishedCopying = false;
 			int bufferSize = 1024 * 64;
 			int bytesCopied = 0;
+			float lastProgress = 0;
 
 			FileStream reader = null;
 			FileStream writer = null;
@@ -96,7 +100,11 @@ namespace MultithreadedFileOperations
 					writer.Write(buffer, 0, bytesRead);
 
 					bytesCopied += bytesRead;
-					OnProgressChange(Args.From.Length * 90.0f / bytesCopied);
+					float newProgress = Args.From.Length == 0 ? 95F : bytesCopied * 95.0f / Args.From.Length;
+					if (newProgress - lastProgress > 0.1)
+					{
+						OnProgressChange(newProgress);
+					}
 
 					ct.ThrowIfCancellationRequested();
 
@@ -107,18 +115,17 @@ namespace MultithreadedFileOperations
 			}
 			catch (Exception e) when (e is IOException || e is UnauthorizedAccessException || e is SecurityException)
 			{
-				var ex = new FileTransferException(Args, e);
-				OnExceptionRaise(ex);
-#if TEST
-				throw ex;
-#endif
+				throw new FileTransferException(Args, e);
 			}
 			finally
 			{
 				reader?.Dispose();
 				writer?.Dispose();
 
-				if (!destFileDidExist && !finishedCopying && Args.To.Exists) Args.To.Delete();
+				if (!destFileDidExist && !finishedCopying && Args.To.Exists)
+				{
+					Args.To.Delete();
+				}
 			}
 		}
 	}

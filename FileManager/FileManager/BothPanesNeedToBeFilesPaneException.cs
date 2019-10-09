@@ -1,14 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace FileManager
 {
-	class BothPanesNeedToBeFilesPaneException : Exception, ICommandException
+	internal class BothPanesNeedToBeFilesPaneException : Exception, ICommandException
 	{
-		ICommand cmd;
+		private readonly ICommand cmd;
 		public BothPanesNeedToBeFilesPaneException(ICommand cmd)
 		{
 			this.cmd = cmd;

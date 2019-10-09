@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace FileManager
+﻿namespace FileManager
 {
-	struct CopyCommand : ITransferCommand
+	internal struct CopyCommand : ITransferCommand
 	{
 		public CopyCommand(string to)
 		{

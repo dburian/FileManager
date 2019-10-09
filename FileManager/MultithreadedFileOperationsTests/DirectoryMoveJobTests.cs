@@ -1,23 +1,19 @@
 ﻿#define TEST
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using MultithreadedFileOperations;
+using System;
 using System.Diagnostics;
 using System.IO;
-using System.Security;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace MultithreadedFileOperationsTests
 {
 	[TestClass]
 	public class DirectoryMoveJobTests
 	{
-		IOTestState state = new IOTestState();
+		private readonly IOTestState state = new IOTestState();
 
 		[TestInitialize]
 		public void BeforeTest()
@@ -45,10 +41,9 @@ namespace MultithreadedFileOperationsTests
 			var cts = new CancellationTokenSource();
 			var job = new DirectoryTransferJob(
 				new DirectoryTransferArguments(state.ExistingEmptyDirectories[0], state.NonExistingDirectories[0], TransferSettings.DeleteOriginal),
-				cts.Token,
-				state.OnExceptionDebugPrint,
 				state.OnProgressDebugPrint
-			);
+,
+				cts.Token);
 
 			job.Run();
 
@@ -63,10 +58,9 @@ namespace MultithreadedFileOperationsTests
 			var cts = new CancellationTokenSource();
 			var job = new DirectoryTransferJob(
 				new DirectoryTransferArguments(state.ExistingNonEmptyDirectories[0], state.NonExistingDirectories[0], TransferSettings.DeleteOriginal),
-				cts.Token,
-				state.OnExceptionDebugPrint,
 				state.OnProgressDebugPrint
-			);
+,
+				cts.Token);
 
 			job.Run();
 
@@ -86,10 +80,9 @@ namespace MultithreadedFileOperationsTests
 			{
 				var job = new DirectoryTransferJob(
 				new DirectoryTransferArguments(state.ExistingNonEmptyDirectories[i], state.NonExistingDirectories[i], TransferSettings.DeleteOriginal),
-				cts.Token,
-				state.OnExceptionDebugPrint,
-				state.OnProgressDebugPrint
-			);
+					state.OnProgressDebugPrint
+,
+					cts.Token);
 
 				tasks[i] = Task.Run(job.Run, cts.Token);
 			}
@@ -113,15 +106,15 @@ namespace MultithreadedFileOperationsTests
 			var cts = new CancellationTokenSource();
 			var job = new DirectoryTransferJob(
 				new DirectoryTransferArguments(state.ExistingNonEmptyDirectories[0], state.ExistingEmptyDirectories[0], TransferSettings.DeleteOriginal),
-				cts.Token,
-				state.OnExceptionDebugPrint,
 				state.OnProgressDebugPrint
-			);
+,
+				cts.Token);
 
 			try
 			{
 				job.Run();
-			}catch(DirectoryTransferException e)
+			}
+			catch (DirectoryTransferException e)
 			{
 				state.ExceptionThrown = true;
 				Assert.IsTrue(e.InnerException is IOException);
@@ -142,10 +135,9 @@ namespace MultithreadedFileOperationsTests
 			var cts = new CancellationTokenSource();
 			var job = new DirectoryTransferJob(
 				new DirectoryTransferArguments(state.NonExistingDirectories[0], state.NonExistingDirectories[1], TransferSettings.DeleteOriginal),
-				cts.Token,
-				state.OnExceptionDebugPrint,
 				state.OnProgressDebugPrint
-			);
+,
+				cts.Token);
 
 			try
 			{
@@ -170,17 +162,17 @@ namespace MultithreadedFileOperationsTests
 			var cts = new CancellationTokenSource();
 			var job = new DirectoryTransferJob(
 				new DirectoryTransferArguments(state.ExistingNonEmptyDirectories[0], state.NonExistingDirectories[0], TransferSettings.DeleteOriginal),
-				cts.Token,
-				state.OnExceptionDebugPrint,
 				state.OnProgressDebugPrint
-			);
-			
+,
+				cts.Token);
+
 			cts.Cancel();
-			
+
 			try
 			{
 				job.Run();
-			}catch(OperationCanceledException)
+			}
+			catch (OperationCanceledException)
 			{
 				state.ExceptionThrown = true;
 			}
@@ -200,10 +192,9 @@ namespace MultithreadedFileOperationsTests
 			var cts = new CancellationTokenSource();
 			var job = new DirectoryTransferJob(
 				new DirectoryTransferArguments(state.ExistingNonEmptyDirectories[0], state.ExistingNonEmptyDirectories[1], TransferSettings.DeleteOriginal),
-				cts.Token,
-				state.OnExceptionDebugPrint,
 				state.OnProgressDebugPrint
-			);
+,
+				cts.Token);
 
 			cts.Cancel();
 
@@ -231,10 +222,9 @@ namespace MultithreadedFileOperationsTests
 			var cts = new CancellationTokenSource();
 			var job = new DirectoryTransferJob(
 				new DirectoryTransferArguments(state.ExistingNonEmptyDirectories[0], state.NonExistingDirecoryWithoutWriteRights, TransferSettings.DeleteOriginal),
-				cts.Token,
-				state.OnExceptionDebugPrint,
 				state.OnProgressDebugPrint
-			);
+,
+				cts.Token);
 
 			try
 			{
@@ -259,10 +249,9 @@ namespace MultithreadedFileOperationsTests
 			var cts = new CancellationTokenSource();
 			var job = new DirectoryTransferJob(
 				new DirectoryTransferArguments(state.ExistingDirecoryWithoutReadRights, state.NonExistingDirectories[0], TransferSettings.DeleteOriginal),
-				cts.Token,
-				state.OnExceptionDebugPrint,
 				state.OnProgressDebugPrint
-			);
+,
+				cts.Token);
 
 			try
 			{
@@ -289,10 +278,9 @@ namespace MultithreadedFileOperationsTests
 				var cts = new CancellationTokenSource();
 				var job = new DirectoryTransferJob(
 					new DirectoryTransferArguments(state.ExistingNonEmptyDirectories[0], state.NonExistingDirectories[0], TransferSettings.DeleteOriginal),
-					cts.Token,
-					state.OnExceptionDebugPrint,
 					state.OnProgressDebugPrint
-				);
+,
+					cts.Token);
 
 				try
 				{

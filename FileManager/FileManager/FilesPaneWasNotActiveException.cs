@@ -1,14 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace FileManager
 {
-	class FilesPaneWasNotActiveException : Exception, ICommandException
+	internal class FilesPaneWasNotActiveException : Exception, ICommandException
 	{
-		ICommand cmd;
+		private readonly ICommand cmd;
 
 		public FilesPaneWasNotActiveException(ICommand cmd)
 		{

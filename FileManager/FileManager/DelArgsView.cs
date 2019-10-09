@@ -1,19 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Drawing;
-using System.Data;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using MultithreadedFileOperations;
 using System.Windows.Forms;
-using MultithreadedFileOperations;
 
 namespace FileManager
 {
 	public partial class DelArgsView : UserControl, IJobArgsView
 	{
-		DeleteJobArguments _args;
+		private DeleteJobArguments _args;
 
 		public DelArgsView()
 		{
@@ -27,7 +19,7 @@ namespace FileManager
 			InitializeComponent();
 			Args = args;
 		}
-		
+
 		public DeleteJobArguments Args
 		{
 			get => _args;
@@ -39,6 +31,9 @@ namespace FileManager
 			}
 		}
 
-		public Control GetControl() => this;
+		public Control GetControl()
+		{
+			return this;
+		}
 	}
 }

@@ -1,13 +1,12 @@
 ﻿#define TEST
 
-using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using MultithreadedFileOperations;
+using System;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using MultithreadedFileOperations;
-using System.Diagnostics;
-using System.Linq;
 
 
 namespace MultithreadedFileOperationsTests
@@ -15,7 +14,7 @@ namespace MultithreadedFileOperationsTests
 	[TestClass]
 	public class DeleteJobTests
 	{
-		IOTestState state = new IOTestState();
+		private readonly IOTestState state = new IOTestState();
 
 		[TestInitialize]
 		public void BeforeTest()
@@ -24,13 +23,16 @@ namespace MultithreadedFileOperationsTests
 		}
 
 		[TestCleanup]
-		public void AfterTest() => state.Cleanup();
+		public void AfterTest()
+		{
+			state.Cleanup();
+		}
 
 		[TestMethod]
 		public void RunSynchronously()
 		{
 			CancellationTokenSource cts = new CancellationTokenSource();
-			var delJob = new DeleteJob(new DeleteJobArguments(state.ExistingFiles[0]), cts.Token, state.OnExceptionDebugPrint, state.OnProgressDebugPrint);
+			var delJob = new DeleteJob(new DeleteJobArguments(state.ExistingFiles[0]), state.OnProgressDebugPrint, cts.Token);
 
 			delJob.Run();
 			state.ExistingFiles[0].Refresh();
@@ -45,15 +47,15 @@ namespace MultithreadedFileOperationsTests
 
 			Task[] jobTasks = new Task[state.ExistingFiles.Length];
 			for (int i = 0; i < state.ExistingFiles.Length; i++)
+			{
 				jobTasks[i] = Task.Run(
 					new DeleteJob(
 						new DeleteJobArguments(state.ExistingFiles[i]),
-						cts.Token,
-						state.OnExceptionDebugPrint,
 						state.OnProgressDebugPrint
-						).Run
+,
+						cts.Token).Run
 					, cts.Token);
-			
+			}
 
 			Task.WaitAll(jobTasks);
 
@@ -70,13 +72,14 @@ namespace MultithreadedFileOperationsTests
 		{
 			CancellationTokenSource cts = new CancellationTokenSource();
 			var delJob = new DeleteJob(
-				new DeleteJobArguments(state.NonExistingFiles[0]),cts.Token, state.OnExceptionDebugPrint, state.OnProgressDebugPrint
-				);
+				new DeleteJobArguments(state.NonExistingFiles[0]), state.OnProgressDebugPrint
+, cts.Token);
 
 			try
 			{
 				delJob.Run();
-			}catch (FileDeleteException e)
+			}
+			catch (DeleteException e)
 			{
 				state.ExceptionThrown = true;
 				Assert.IsTrue(e.InnerException is FileNotFoundException);
@@ -94,21 +97,22 @@ namespace MultithreadedFileOperationsTests
 			cts.Cancel();
 
 			for (int i = 0; i < state.ExistingFiles.Length; i++)
+			{
 				jobTasks[i] = Task.Run(
 					new DeleteJob(
 						new DeleteJobArguments(state.ExistingFiles[i]),
-						cts.Token,
-						state.OnExceptionDebugPrint,
 						state.OnProgressDebugPrint
-						).Run,
+,
+						cts.Token).Run,
 					cts.Token
 					);
-			
+			}
 
 			try
 			{
 				Task.WaitAll(jobTasks);
-			}catch(AggregateException ae)
+			}
+			catch (AggregateException ae)
 			{
 				Assert.IsTrue(ae.InnerExceptions.All(e => e is OperationCanceledException));
 				state.ExceptionThrown = true;
@@ -128,7 +132,7 @@ namespace MultithreadedFileOperationsTests
 		public void CanceledBeforeAndTargetDoesNotExist()
 		{
 			CancellationTokenSource cts = new CancellationTokenSource();
-			var delJob = new DeleteJob(new DeleteJobArguments(state.NonExistingFiles[0]), cts.Token, state.OnExceptionDebugPrint, state.OnProgressDebugPrint);
+			var delJob = new DeleteJob(new DeleteJobArguments(state.NonExistingFiles[0]), state.OnProgressDebugPrint, cts.Token);
 
 			cts.Cancel();
 
@@ -136,7 +140,8 @@ namespace MultithreadedFileOperationsTests
 			try
 			{
 				t.Wait();
-			}catch (AggregateException ae)
+			}
+			catch (AggregateException ae)
 			{
 				Assert.IsTrue(ae.InnerExceptions.All(e => e is OperationCanceledException));
 				state.ExceptionThrown = true;
@@ -149,12 +154,13 @@ namespace MultithreadedFileOperationsTests
 		public void TargetWithoutRights()
 		{
 			CancellationTokenSource cts = new CancellationTokenSource();
-			var delJob = new DeleteJob(new DeleteJobArguments(state.ExistentFileWithoutRights), cts.Token, state.OnExceptionDebugPrint, state.OnProgressDebugPrint);
+			var delJob = new DeleteJob(new DeleteJobArguments(state.ExistentFileWithoutRights), state.OnProgressDebugPrint, cts.Token);
 
 			try
 			{
 				delJob.Run();
-			}catch (FileDeleteException e)
+			}
+			catch (DeleteException e)
 			{
 				state.ExceptionThrown = true;
 				Assert.IsTrue(e.InnerException is UnauthorizedAccessException);
@@ -192,15 +198,16 @@ namespace MultithreadedFileOperationsTests
 		[TestMethod]
 		public void OpenedHandle()
 		{
-			using(var fs = new FileStream(state.ExistingFiles[0].FullName, FileMode.Open))
+			using (var fs = new FileStream(state.ExistingFiles[0].FullName, FileMode.Open))
 			{
 				CancellationTokenSource cts = new CancellationTokenSource();
-				var delJob = new DeleteJob(new DeleteJobArguments(state.ExistingFiles[0]), cts.Token, state.OnExceptionDebugPrint, state.OnProgressDebugPrint);
+				var delJob = new DeleteJob(new DeleteJobArguments(state.ExistingFiles[0]), state.OnProgressDebugPrint, cts.Token);
 
 				try
 				{
 					delJob.Run();
-				}catch(FileDeleteException e)
+				}
+				catch (DeleteException e)
 				{
 					state.ExceptionThrown = true;
 					Assert.IsTrue(e.InnerException is IOException);

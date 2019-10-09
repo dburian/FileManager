@@ -1,11 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.IO;
+﻿using System.IO;
 
 namespace MultithreadedFileOperations
 {
-	public struct FileTransferArguments : IJobArguments, ITransferJobArguments
+	/// <summary>
+	/// Encapsulates all the information needed to execute FileTransferOperation.
+	/// </summary>
+	public struct FileTransferArguments : ITransferJobArguments
 	{
 
 		public FileTransferArguments(FileInfo from, FileInfo to, TransferSettings settings)
@@ -15,14 +15,13 @@ namespace MultithreadedFileOperations
 			Settings = settings;
 		}
 
-		//TODO: get only properties exist...
 		public FileInfo From { get; }
 		public FileInfo To { get; }
 		public TransferSettings Settings { get; }
 
-		FileSystemInfo ITransferJobArguments.From { get => From; }
-		FileSystemInfo ITransferJobArguments.To { get => To; }
-		TransferSettings ITransferJobArguments.Settings { get => Settings; }
+		FileSystemInfo ITransferJobArguments.From => From;
+		FileSystemInfo ITransferJobArguments.To => To;
+		TransferSettings ITransferJobArguments.Settings => Settings;
 
 	}
 }

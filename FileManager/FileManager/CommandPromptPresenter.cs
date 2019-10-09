@@ -1,18 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
-using System.Diagnostics;
+﻿using System.Windows.Forms;
 
 namespace FileManager
 {
-	class CommandPromptPresenter
+	/// <summary>
+	/// Controls command prompt through ICommandPrompt interface.
+	/// </summary>
+	internal class CommandPromptPresenter
 	{
-		bool _enteringCommand;
-
-		ICommandPrompt commandPrompt;
+		private bool _enteringCommand;
+		private readonly ICommandPrompt commandPrompt;
 
 		public CommandPromptPresenter(ICommandPrompt commandPrompt)
 		{
@@ -23,19 +19,36 @@ namespace FileManager
 
 		public event ProcessCommandDelegate ProcessCommand;
 
-		bool EnteringCommand
+		private bool EnteringCommand
 		{
 			get => _enteringCommand;
-			set {
+			set
+			{
 				_enteringCommand = value;
-				if (!_enteringCommand)
+				if (_enteringCommand)
+				{
+					commandPrompt.Command = "";
+				}
+				else
+				{
 					commandPrompt.Command = Config.DefaultCommandPrompt;
+				}
 			}
 		}
 
+		/// <summary>
+		/// Processes key press.
+		/// </summary>
+		/// <param name="keyPressed">Pressed key</param>
+		/// <returns>True if the event was handled, false otherwise.</returns>
 		public bool ProcessKeyPress(InputKey keyPressed)
 		{
-			if (!EnteringCommand && (keyPressed == '/' || keyPressed == ':'))
+			if (!EnteringCommand)
+			{
+				return false;
+			}
+
+			if (commandPrompt.Command.Length == 0 && (keyPressed == '/' || keyPressed == ':'))
 			{
 				//Not catching the event, but acting on it
 				EnteringCommand = true;
@@ -43,9 +56,6 @@ namespace FileManager
 
 				return false;
 			}
-
-			if (!EnteringCommand) return false;
-
 			if (keyPressed == Keys.Return)
 			{
 				ProcessCommand?.Invoke(CreateCommand());
@@ -54,9 +64,15 @@ namespace FileManager
 
 			if (keyPressed == Keys.Back)
 			{
-				if (commandPrompt.Command == "/") commandPrompt.Command = ":";
+				if (commandPrompt.Command == "/")
+				{
+					commandPrompt.Command = ":";
+				}
 				else if (commandPrompt.Command.Length > 1)
+				{
 					commandPrompt.Command = commandPrompt.Command.Substring(0, commandPrompt.Command.Length - 1);
+				}
+
 				return true;
 			}
 
@@ -66,12 +82,19 @@ namespace FileManager
 				EnteringCommand = false;
 				return false;
 			}
-			
 
-			if (keyPressed.IsChar() && CommandLenghtCheck(keyPressed._char))
+
+			if (keyPressed.IsChar && CommandLenghtCheck(keyPressed.Character))
 			{
-				if (commandPrompt.Command == ":" && keyPressed == '/') commandPrompt.Command = "/";
-				else commandPrompt.Command += keyPressed._char;
+				if (commandPrompt.Command == ":" && keyPressed == '/')
+				{
+					commandPrompt.Command = "/";
+				}
+				else
+				{
+					commandPrompt.Command += keyPressed.Character;
+				}
+
 				return true;
 			}
 
@@ -84,8 +107,11 @@ namespace FileManager
 			//"Processing" every keystroke when entering command...
 			return true;
 		}
-		
-		
+
+		/// <summary>
+		/// Sets focus on underlying CommandPrompt
+		/// </summary>
+		/// <param name="inFocus"></param>
 		public void SetFocusOnView(bool inFocus)
 		{
 			EnteringCommand = inFocus;
@@ -97,20 +123,22 @@ namespace FileManager
 			EnteringCommand = false;
 		}
 
-		ICommand CreateCommand()
+		private ICommand CreateCommand()
 		{
 			var command = commandPrompt.Command.StartsWith(":") ? commandPrompt.Command.Substring(1) : "/ " + commandPrompt.Command.Substring(1);
 
-			ICommand parsedCmd;
-			foreach(var cmdFactory in RegisteredCommands.GetCommandFactories())
+			foreach (var cmdFactory in RegisteredCommands.GetCommandFactories())
 			{
-				if (cmdFactory.Parse(command, out parsedCmd)) return parsedCmd;
+				if (cmdFactory.Parse(command, out ICommand parsedCmd))
+				{
+					return parsedCmd;
+				}
 			}
 
 			return RegisteredCommands.GetUnknownCommand(commandPrompt.Command.Substring(1));
 		}
 
-		bool CommandLenghtCheck(char c)
+		private bool CommandLenghtCheck(char c)
 		{
 			return TextRenderer.MeasureText(commandPrompt.Command + c, commandPrompt.Font).Width < commandPrompt.Width;
 		}

@@ -1,45 +1,77 @@
-﻿using System;
+﻿using MultithreadedFileOperations;
+using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using MultithreadedFileOperations;
-using System.Threading;
 
 namespace FileManager
 {
-	class JobsPanePresenter : IPanePresenter, IDisposable
+	/// <summary>
+	/// Controls the jobs pane through IJobsPane interface.
+	/// </summary>
+	internal class JobsPanePresenter : IPanePresenter, IDisposable
 	{
-		IJobsPane pane;
-		SortedEntriesHolder<JobEntry> entriesHolder;
+		private readonly IJobsPane pane;
+		private readonly UnsortedEntriesHolder<JobEntry> entriesHolder;
 
-		TaskScheduler UIScheduler;
-
+		/// <summary>
+		/// Initializes JobsPanePresenter and registers for job update callback from JobsPool.
+		/// </summary>
 		public JobsPanePresenter(IJobsPane pane)
 		{
 			this.pane = pane;
-			List<IJobView> views;
 
-			UIScheduler = TaskScheduler.FromCurrentSynchronizationContext();
+			JobsPool.RegisterNewJobsPane(JobChanged, out List<IJobView> views);
 
-			JobsPool.UIThreadSafe.RegisterNewJobsPane(JobChanged, out views);
+			entriesHolder = new UnsortedEntriesHolder<JobEntry>((EntriesPane<JobEntry>)pane)
+			{
+				HighlightingFilter = _ => false
+			};
 
-			entriesHolder = new SortedEntriesHolder<JobEntry>((EntriesPane<JobEntry>)pane, (x, y) => x.EntryType - y.EntryType);
+			JobEntry[] entries = new JobEntry[views.Count];
+			int i = 0;
+			foreach (var view in views)
+			{
+				switch (view.LastStatus)
+				{
+					case JobStatus.Waiting:
+						pane.JobsQueued++;
+						break;
+					case JobStatus.Running:
+						pane.JobsQueued++;
+						break;
 
-			//TODO: entries do not function properly
-			entriesHolder.AddRange(views.Select(view => new JobEntry(view, view.GetJobTypeDescription()) { Status = JobStatus.Waiting }).ToArray());
+				}
+
+				entries[i] = new JobEntry(view, view.GetJobTypeDescription());
+				i++;
+			}
+
+			entriesHolder.AddRange(entries);
 		}
 
-		public event ProcessCommandDelegate ProcessComand;
+		public event ProcessCommandDelegate InvokeCommand;
 
+		/// <summary>
+		/// Disposes the underlying pane and sings out of the update callbacks from JobsPool.
+		/// </summary>
 		public void Dispose()
 		{
-			JobsPool.UIThreadSafe.SignOutJobsPane(JobChanged);
+			JobsPool.SignOutJobsPane(JobChanged);
+			pane.GetControl().Dispose();
 		}
 
-		public Control GetViewsControl() => pane.GetControl();
+		public Control GetViewsControl()
+		{
+			return pane.GetControl();
+		}
 
+		/// <summary>
+		/// Processes key press.
+		/// </summary>
+		/// <param name="pressedKey">Pressed key.</param>
+		/// <returns>True if the event was handled, false otherwise.</returns>
 		public bool ProcessKeyPress(InputKey pressedKey)
 		{
 			return entriesHolder.ProcessKeyPress(pressedKey);
@@ -51,71 +83,122 @@ namespace FileManager
 			entriesHolder.InFocus = inFocus;
 		}
 
-		void JobChanged(IJobView jobView, JobChangeEvent changeEvent)
+		private void JobChanged(IJobView jobView, JobChangeEvent changeEvent)
 		{
-			Task.Factory.StartNew(() => {
-				switch (changeEvent)
-				{
-					case JobChangeEvent.BeforeRun:
-						pane.JobsQueued++;
-						entriesHolder.Add(new JobEntry(jobView, jobView.GetJobTypeDescription()) { Status = JobStatus.Waiting });
-						break;
+			if (pane.GetControl().IsDisposed)
+			{
+				return;
+			}
 
-					case JobChangeEvent.AfterCompleted:
+			if (!pane.GetControl().IsHandleCreated)
+			{
+				pane.GetControl().HandleCreated += (object sender, EventArgs e) => JobChangeHandler(jobView, changeEvent);
+			}
+			else
+			{
+				pane.GetControl().BeginInvoke(new Action<IJobView, JobChangeEvent>(JobChangeHandler), jobView, changeEvent);
+			}
+		}
+
+		private void JobChangeHandler(IJobView jobView, JobChangeEvent changeEvent)
+		{
+			switch (changeEvent)
+			{
+				case JobChangeEvent.Enqueued:
+					pane.JobsQueued++;
+					entriesHolder.Add(new JobEntry(jobView, jobView.GetJobTypeDescription()));
+					break;
+				case JobChangeEvent.BeforeRun:
+					{
+						var entry = entriesHolder.Find(e => e.JobId == jobView.Id);
+						if (entry == null || entry.Locked)
 						{
-							pane.JobsInProgress--;
-							var entry = entriesHolder.Find(e => e.JobId == jobView.Id);
-							if (entry == null || entry.Locked) return;
-
-							entry.Status = JobStatus.Done;
-							entry.Locked = true;
-							Task.Delay(500).ContinueWith(
-								_ => { entriesHolder.Remove(e => e.JobId == jobView.Id); }
-								, new CancellationToken()
-								, TaskContinuationOptions.None
-								, TaskScheduler.FromCurrentSynchronizationContext()
-							);
+							return;
 						}
-						break;
 
-					case JobChangeEvent.OnProgressChange:
+						pane.JobsQueued--;
+						pane.JobsInProgress++;
+						entry.Status = JobStatus.Running;
+					}
+					break;
+
+				case JobChangeEvent.AfterCompleted:
+					{
+						var entry = entriesHolder.Find(e => e.JobId == jobView.Id);
+						if (entry == null || entry.Locked)
 						{
-							var entry = entriesHolder.Find(e => e.JobId == jobView.Id);
-							if (entry.Status == JobStatus.Waiting)
-							{
-								pane.JobsQueued--;
-								pane.JobsInProgress++;
-							}
-
-							if (entry != null && !entry.Locked) entry.EntryProgress = jobView.Progress;
+							return;
 						}
-						break;
 
-					case JobChangeEvent.OnExceptionRaise:
+						pane.JobsInProgress--;
+
+						entry.Status = JobStatus.Done;
+						entry.Locked = true;
+					}
+					break;
+
+				case JobChangeEvent.OnProgressChange:
+					{
+						var entry = entriesHolder.Find(e => e.JobId == jobView.Id);
+						if (entry == null)
 						{
-							var entry = entriesHolder.Find(e => e.JobId == jobView.Id);
-							if (entry == null || entry.Locked) return;
-
-							entry.EntryException = jobView.Exception;
-							entry.Status = JobStatus.Error;
-							entry.Locked = true;
+							pane.JobsInProgress++;
+							entriesHolder.AddToTop(new JobEntry(jobView, jobView.GetJobTypeDescription()));
 						}
-						break;
-
-					case JobChangeEvent.Canceled:
+						else if (entry.Locked)
 						{
-							var entry = entriesHolder.Find(e => e.JobId == jobView.Id);
-							if (entry == null || entry.Locked) return;
-
-							entry.Status = JobStatus.Canceled;
-							entry.Locked = true;
+							return;
 						}
-						break;
-						
-					default:
-						throw new ArgumentOutOfRangeException("JobsPanePresenter.JobsChanged: Maybe new type of JobChangeEvent?");
-				}
-			}, new CancellationToken(), TaskCreationOptions.None, UIScheduler);
+						else
+						{
+							entry.EntryProgress = jobView.Progress;
+						}
+					}
+					break;
+
+				case JobChangeEvent.ExceptionThrown:
+					{
+						var entry = entriesHolder.Find(e => e.JobId == jobView.Id);
+						if (entry == null || entry.Locked)
+						{
+							return;
+						}
+
+						pane.JobsInProgress--;
+						entry.EntryException = jobView.Exception;
+						entry.Status = JobStatus.Error;
+						entry.Locked = true;
+					}
+					break;
+
+				case JobChangeEvent.Canceled:
+					{
+						var entry = entriesHolder.Find(e => e.JobId == jobView.Id);
+						if (entry == null || entry.Locked)
+						{
+							return;
+						}
+
+						pane.JobsInProgress--;
+						entry.Status = JobStatus.Canceled;
+						entry.Locked = true;
+
+					}
+					break;
+
+				default:
+					throw new ArgumentOutOfRangeException("JobsPanePresenter.JobsChanged: Maybe new type of JobChangeEvent?");
+			}
+
+			if (changeEvent == JobChangeEvent.AfterCompleted || changeEvent == JobChangeEvent.ExceptionThrown || changeEvent == JobChangeEvent.Canceled)
+			{
+				Task.Delay(2000).ContinueWith(
+					_ => { entriesHolder.Remove(e => e.JobId == jobView.Id); }
+					, new CancellationToken()
+					, TaskContinuationOptions.None
+					, TaskScheduler.FromCurrentSynchronizationContext()
+				);
+			}
 		}
 	}
 }

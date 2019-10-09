@@ -1,30 +1,21 @@
-﻿ using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Drawing;
-using System.Data;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
+﻿using System;
 using System.IO;
-using System.Diagnostics;
+using System.Windows.Forms;
 
 namespace FileManager
 {
-	public partial class FilesPane : 
-		//UserControl,
-		EntriesPane<FileSystemNodeEntry>, 
-		IFilesPane
+	/// <summary>
+	/// Displays contents of a folder.
+	/// </summary>
+	public partial class FilesPane : EntriesPane<FileSystemNodeEntry>, IFilesPane
 	{
+		private DirectoryInfo _currentDir;
+		private int _directoryEntriesCount;
+		private int _fileEntriesCount;
+		private int _selectedEntriesCount;
+		private long _selectedEntriesSize;
+		private bool _inFocus = false;
 
-		DirectoryInfo _currentDir;
-		int _directoryEntriesCount;
-		int _fileEntriesCount;
-		int _selectedEntriesCount;
-		long _selectedEntriesSize;
-		bool _inFocus = false;
-		
 		public FilesPane()
 		{
 			InitializeComponent();
@@ -53,14 +44,17 @@ namespace FileManager
 			get => _currentDir;
 			set
 			{
-				if (!value.Exists) throw new ArgumentException($"FilesPane.CurrentDir: directory {value.FullName} is invalid.");
+				if (!value.Exists)
+				{
+					throw new ArgumentException($"FilesPane.CurrentDir: directory {value.FullName} is invalid.");
+				}
 
 				_currentDir = value;
 
-				currentDirectoryLabel.Text = _currentDir.FullName;
+				currentDirectoryLabel.Text = Format.GetCamelCasedPath(_currentDir.FullName);
 			}
 		}
-		public override ScrollableControl ViewPanel { get => filesViewPanel; }
+		public override ScrollableControl ViewPanel => filesViewPanel;
 		public long FreeSpaceInDir
 		{
 			set => freeSpaceLabel.Text = Format.Size(value);
@@ -100,14 +94,17 @@ namespace FileManager
 			}
 		}
 
-		public override Control GetControl() => this;
+		public override Control GetControl()
+		{
+			return this;
+		}
 
-		void RefreshHighlightedEntriesLabel()
+		private void RefreshHighlightedEntriesLabel()
 		{
 			highlightedEntriesLabel.Text = $"{_selectedEntriesCount} hihglighted - {Format.Size(_selectedEntriesSize)}";
 		}
 
-		void RefreshNumberOfFilesLabel()
+		private void RefreshNumberOfFilesLabel()
 		{
 			numberOfFilesLabel.Text = $"{_fileEntriesCount} files - {_directoryEntriesCount} directories";
 		}

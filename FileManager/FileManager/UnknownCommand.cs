@@ -1,12 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace FileManager
+﻿namespace FileManager
 {
-	struct UnknownCommand : ICommand
+	/// <summary>
+	/// Command representing all unknown commands.
+	/// </summary>
+	internal struct UnknownCommand : ICommand
 	{
 		public readonly string enteredCommand;
 

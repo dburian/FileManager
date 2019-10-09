@@ -1,15 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
+﻿using System.Windows.Forms;
 
 namespace FileManager
 {
-	interface IMainForm
+	internal interface IMainForm
 	{
 		event ProcessKeyPress ProcessKeyPressEvent;
+		event FormClosingEventHandler FormClosing;
 
 		Control LeftPane { get; set; }
 		Control RightPane { get; set; }

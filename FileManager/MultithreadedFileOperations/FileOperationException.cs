@@ -1,11 +1,15 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace MultithreadedFileOperations
 {
+	/// <summary>
+	/// Base class for all exeptions in MultithreadedFileOperations library.
+	/// </summary>
 	public abstract class FileOperationException : Exception
 	{
+		public FileOperationException()
+			: base("A FileOperationException has been thrown.")
+		{ }
 		public FileOperationException(string message) : base(message) { }
 		public FileOperationException(string message, Exception innerException) : base(message, innerException) { }
 
@@ -22,5 +26,7 @@ namespace MultithreadedFileOperations
 
 			return message;
 		}
+
+
 	}
 }

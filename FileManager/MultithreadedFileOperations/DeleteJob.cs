@@ -1,11 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading;
 using System.IO;
+using System.Security;
+using System.Threading;
 
 namespace MultithreadedFileOperations
 {
+	/// <summary>
+	/// Cancelable delete operation. Can delete files and (non-empty)directories.
+	/// </summary>
 	internal class DeleteJob : Job
 	{
 
@@ -14,38 +16,50 @@ namespace MultithreadedFileOperations
 			Args = args;
 			this.ct = ct;
 		}
-		public DeleteJob(DeleteJobArguments args, CancellationToken ct, OnExceptionRaiseDelegate onExceptionRaise, OnProgressChangeDelegate onProgressChange)
-			:this(args, ct)
+		public DeleteJob(DeleteJobArguments args, OnProgressChangeDelegate onProgressChange, CancellationToken ct)
+			: this(args, ct)
 		{
-			ExceptionRaise += onExceptionRaise;
 			ProgressChange += onProgressChange;
 		}
 
-		public override JobType Type { get => JobType.Delete; }
-		public DeleteJobArguments Args { get; private set; }
+		public override JobType Type => JobType.Delete;
+		public DeleteJobArguments Args { get; }
 
+		/// <summary>
+		/// Executes the operation.
+		/// </summary>
+		/// <exception cref="DeleteException"/>
 		public override void Run()
 		{
 			try
 			{
 				ct.ThrowIfCancellationRequested();
 
-				if (!Args.Target.Exists) throw new FileNotFoundException("File or directory not found.", Args.Target.FullName);
+				if (!Args.Target.Exists)
+				{
+					throw new FileNotFoundException("File or directory not found.", Args.Target.FullName);
+				}
 
-				if (Args.Recursively) ((DirectoryInfo)Args.Target).Delete(Args.Recursively);
-				else Args.Target.Delete();
+				if (Args.Recursively)
+				{
+					((DirectoryInfo)Args.Target).Delete(Args.Recursively);
+				}
+				else
+				{
+					Args.Target.Delete();
+				}
 
 				OnProgressChange(100f);
-			}catch (Exception e) when (e is DirectoryNotFoundException || e is IOException || e is UnauthorizedAccessException)
+			}
+			catch (Exception e) when (e is SecurityException || e is IOException || e is UnauthorizedAccessException)
 			{
-				var ex = new FileDeleteException(Args, e);
-				OnExceptionRaise(ex);
-#if TEST
-				throw ex;
-#endif
+				throw new DeleteException(Args, e);
 			}
 		}
 
-		public override void Accept(IJobVisitor visitor) => visitor.Visit(this);
+		public override void Accept(IJobVisitor visitor)
+		{
+			visitor.Visit(this);
+		}
 	}
 }

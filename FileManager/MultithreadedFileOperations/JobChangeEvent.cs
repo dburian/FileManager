@@ -1,15 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace MultithreadedFileOperations
+﻿namespace MultithreadedFileOperations
 {
+	/// <summary>
+	/// Possible changes to a job's state.
+	/// </summary>
 	public enum JobChangeEvent
 	{
+		Enqueued,
 		BeforeRun,
 		AfterCompleted,
 		OnProgressChange,
-		OnExceptionRaise,
+		ExceptionThrown,
 		Canceled
 	}
 }

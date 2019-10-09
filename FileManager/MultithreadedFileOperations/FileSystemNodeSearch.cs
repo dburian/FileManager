@@ -1,19 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 using System.IO;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Security;
-using System.Diagnostics;
+using System.Threading;
 
 namespace MultithreadedFileOperations
 {
-	class FileSystemNodeSearch
+	/// <summary>
+	/// Search cancelable operation. Searches based on provided SearchSettings.
+	/// </summary>
+	internal class FileSystemNodeSearch
 	{
-
-		CancellationToken ct;
+		private CancellationToken ct;
 
 		public FileSystemNodeSearch(SearchSettings settings, CancellationToken ct)
 		{
@@ -22,10 +20,10 @@ namespace MultithreadedFileOperations
 		}
 		public FileSystemNodeSearch(
 			SearchSettings settings,
-			CancellationToken ct,
 			OnFileSystemNodeFoundDelegate onNodeFound,
-			OnExceptionRaiseDelegate exceptionRise)
-			:this(settings, ct)
+			OnExceptionRaiseDelegate exceptionRise,
+			CancellationToken ct)
+			: this(settings, ct)
 		{
 			NodeFound += onNodeFound;
 			ExceptionRise += exceptionRise;
@@ -36,6 +34,9 @@ namespace MultithreadedFileOperations
 
 		public SearchSettings Settings { get; }
 
+		/// <summary>
+		/// Starts the search.
+		/// </summary>
 		public void Start()
 		{
 			try
@@ -43,18 +44,31 @@ namespace MultithreadedFileOperations
 
 				foreach (var file in Settings.InDirectory.EnumerateFiles())
 				{
-					if (Settings.Target == file) NodeFound?.Invoke(file);
+					if (Settings.Target == file)
+					{
+						NodeFound?.Invoke(file);
+					}
 				}
 				ct.ThrowIfCancellationRequested();
 
 
 				List<DirectoryInfo> dirsToBeSearched = null;
-				if (Settings.SearchSubdirectories) dirsToBeSearched = new List<DirectoryInfo>();
+				if (Settings.SearchSubdirectories)
+				{
+					dirsToBeSearched = new List<DirectoryInfo>();
+				}
 
 				foreach (var dir in Settings.InDirectory.EnumerateDirectories())
 				{
-					if (Settings.Target == dir) NodeFound?.Invoke(dir);
-					if (Settings.SearchSubdirectories && IsFolderReadable(dir)) dirsToBeSearched.Add(dir);
+					if (Settings.Target == dir)
+					{
+						NodeFound?.Invoke(dir);
+					}
+
+					if (Settings.SearchSubdirectories && IsFolderReadable(dir))
+					{
+						dirsToBeSearched.Add(dir);
+					}
 				}
 
 				ct.ThrowIfCancellationRequested();
@@ -71,17 +85,17 @@ namespace MultithreadedFileOperations
 			}
 		}
 
-		private bool IsFolderReadable(DirectoryInfo dir)
+		private static bool IsFolderReadable(DirectoryInfo dir)
 		{
-			//TODO: try ACLs...
 			try
 			{
 				foreach (var innerDir in dir.EnumerateDirectories())
+				{
 					return true;
-				
-			}catch(Exception e) when (e is SecurityException || e is UnauthorizedAccessException || e is DirectoryNotFoundException)
+				}
+			}
+			catch (Exception e) when (e is SecurityException || e is UnauthorizedAccessException || e is DirectoryNotFoundException)
 			{
-				Debug.WriteLine("Exception captured");
 				return false;
 			}
 
@@ -93,7 +107,7 @@ namespace MultithreadedFileOperations
 			public static FileSystemNodeSearch CreateFromParentSearchJob(FileSystemNodeSearch parentDirSearch, DirectoryInfo dirToSearch)
 			{
 				var settings = new SearchSettings(parentDirSearch.Settings.Target, dirToSearch, true);
-				return new FileSystemNodeSearch(settings, parentDirSearch.ct, parentDirSearch.NodeFound, parentDirSearch.ExceptionRise);
+				return new FileSystemNodeSearch(settings, parentDirSearch.NodeFound, parentDirSearch.ExceptionRise, parentDirSearch.ct);
 			}
 		}
 	}

@@ -1,26 +1,22 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Drawing;
-using System.Data;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Drawing;
 using System.Windows.Forms;
 
 namespace FileManager
 {
+	/// <summary>
+	/// Command prompt view.
+	/// </summary>
 	public partial class CommandPrompt : UserControl, ICommandPrompt
 	{
-		bool _inFocus;
+		private bool _inFocus;
 
 		public CommandPrompt()
 		{
 			InitializeComponent();
 		}
 
-		int ICommandPrompt.Width { get => commandLabel.Width - commandLabel.Padding.Left - commandLabel.Padding.Right; }
-		Font ICommandPrompt.Font { get => commandLabel.Font; }
+		int ICommandPrompt.Width => commandLabel.Width - commandLabel.Padding.Left - commandLabel.Padding.Right;
+		Font ICommandPrompt.Font => commandLabel.Font;
 
 		public string Command
 		{

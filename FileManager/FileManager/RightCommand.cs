@@ -1,18 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace FileManager
+﻿namespace FileManager
 {
-	struct RightCommand : ICommand
+	internal struct RightCommand : ICommand
 	{
-		public Panes Pane { get; private set; }
-
 		public RightCommand(Panes pane)
 		{
 			Pane = pane;
 		}
+
+		public Panes Pane { get; }
 	}
 }

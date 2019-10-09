@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using MultithreadedFileOperations;
 
 namespace FileManager
 {
-	interface ISearchResultPane : IPane
+	internal interface ISearchResultPane : IPane
 	{
 		int Found { get; set; }
 		string SearchingName { get; set; }

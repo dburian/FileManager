@@ -97,7 +97,7 @@
 			this.fromArgLabel.Size = new System.Drawing.Size(389, 25);
 			this.fromArgLabel.TabIndex = 2;
 			this.fromArgLabel.Text = "C:/Users/David/Documents/Matfyz/somedoc.pdf";
-			this.fromArgLabel.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+			this.fromArgLabel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
 			// 
 			// toArgLabel
 			// 
@@ -111,7 +111,7 @@
 			this.toArgLabel.Size = new System.Drawing.Size(389, 25);
 			this.toArgLabel.TabIndex = 3;
 			this.toArgLabel.Text = "C:/Users/David/Documents/Matfyz/someotherdoc.pdf";
-			this.toArgLabel.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+			this.toArgLabel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
 			// 
 			// CopyMoveArgs
 			// 

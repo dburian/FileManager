@@ -1,12 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace FileManager
+﻿namespace FileManager
 {
-	interface ICommandException
+	/// <summary>
+	/// Common interface for all exceptions which are raised when processing some command.
+	/// </summary>
+	internal interface ICommandException
 	{
 		string Message { get; }
 		string Type { get; }

@@ -1,17 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using HelperExtensionLibrary;
-
-namespace FileManager
+﻿namespace FileManager
 {
-	struct ChangeDirectoryCommand : ICommand
+	internal struct ChangeDirectoryCommand : ICommand
 	{
 		public ChangeDirectoryCommand(string targetPath)
 		{
-			this.TargetPath = targetPath.GetCamelCasedPath();
+			this.TargetPath = targetPath;
 		}
 
 		public string TargetPath { get; }

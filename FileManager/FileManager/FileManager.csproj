@@ -84,6 +84,7 @@
     <Compile Include="ChangeDirectoryCommandFactory.cs" />
     <Compile Include="CommandParser.cs" />
     <Compile Include="CopyCommandFactory.cs" />
+    <Compile Include="FileOrDirectoryMustBeSelectedException.cs" />
     <Compile Include="ITransferCommand.cs" />
     <Compile Include="JobTypeDescription.cs" />
     <Compile Include="IJobViewExtensions.cs" />
@@ -143,11 +144,11 @@
       <DependentUpon>CommandPrompt.cs</DependentUpon>
     </Compile>
     <Compile Include="Config.cs" />
-    <Compile Include="CopyMoveArgsView.cs">
+    <Compile Include="TransferArgsView.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="CopyMoveArgsView.Designer.cs">
-      <DependentUpon>CopyMoveArgsView.cs</DependentUpon>
+    <Compile Include="TransferArgsView.Designer.cs">
+      <DependentUpon>TransferArgsView.cs</DependentUpon>
     </Compile>
     <Compile Include="DelArgsView.cs">
       <SubType>UserControl</SubType>
@@ -200,7 +201,6 @@
       <DependentUpon>FilesPane.cs</DependentUpon>
     </Compile>
     <Compile Include="JobsPanePresenter.cs" />
-    <Compile Include="JobStatus.cs" />
     <Compile Include="LeftCommand.cs" />
     <Compile Include="LeftRightCommandFactory.cs" />
     <Compile Include="MoveCommand.cs" />
@@ -256,8 +256,14 @@
     <EmbeddedResource Include="CommandPrompt.resx">
       <DependentUpon>CommandPrompt.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="CopyMoveArgsView.resx">
-      <DependentUpon>CopyMoveArgsView.cs</DependentUpon>
+    <EmbeddedResource Include="SearchResultDirectoryEntry.resx">
+      <DependentUpon>SearchResultDirectoryEntry.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SearchResultFileEntry.resx">
+      <DependentUpon>SearchResultFileEntry.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="TransferArgsView.resx">
+      <DependentUpon>TransferArgsView.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="DelArgsView.resx">
       <DependentUpon>DelArgsView.cs</DependentUpon>

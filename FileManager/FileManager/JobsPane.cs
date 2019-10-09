@@ -1,21 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Drawing;
-using System.Data;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
+﻿using System.Windows.Forms;
 
 namespace FileManager
 {
 	public partial class JobsPane : EntriesPane<JobEntry>, IJobsPane
 	{
-		int _inProgress;
-		int _queued;
-		int _selected;
-		bool _inFocus;
+		private int _inProgress;
+		private int _queued;
+		private bool _inFocus;
 
 		public JobsPane()
 		{
@@ -33,7 +24,8 @@ namespace FileManager
 			}
 		}
 
-		public int JobsQueued {
+		public int JobsQueued
+		{
 			get => _queued;
 			set
 			{
@@ -42,24 +34,16 @@ namespace FileManager
 				jobsQueuedLabel.Text = $"{_queued} jobs in queue";
 			}
 		}
-		public int JobsSelected {
-			get => _selected;
-			set
-			{
-				_selected = value;
-
-				jobsSelectedLabel.Text = $"{_selected} jobs selected";
-			}
-		}
 
 
-		public override bool InFocus {
+		public override bool InFocus
+		{
 			get => _inFocus;
 			set
 			{
 				_inFocus = value;
 
-				if(_inFocus)
+				if (_inFocus)
 				{
 					jobsLabel.BackColor = Config.ColorPalette.Black;
 					jobsLabel.ForeColor = Config.ColorPalette.White;
@@ -74,7 +58,9 @@ namespace FileManager
 
 		public override ScrollableControl ViewPanel => jobsViewPanel;
 
-		public override Control GetControl() => this;
-
+		public override Control GetControl()
+		{
+			return this;
+		}
 	}
 }

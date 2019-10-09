@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using MultithreadedFileOperations;
+﻿using MultithreadedFileOperations;
+using System;
 using System.IO;
 
 namespace FileManager
@@ -13,25 +11,37 @@ namespace FileManager
 			if (jobView.Type == JobType.Delete)
 			{
 				if (jobView.GetArgumentsView().DeleteArguments.Target.GetType() == typeof(DirectoryInfo))
+				{
 					return JobTypeDescription.DirDelete;
+				}
 				else
+				{
 					return JobTypeDescription.FileDelete;
+				}
 			}
 
 			if (jobView.Type == JobType.DirTransfer)
 			{
 				if (jobView.GetArgumentsView().DirectoryTransferArguments.Settings == TransferSettings.DeleteOriginal)
+				{
 					return JobTypeDescription.DirMove;
+				}
 				else
+				{
 					return JobTypeDescription.DirCopy;
+				}
 			}
 
 			if (jobView.Type == JobType.FileTransfer)
 			{
 				if (jobView.GetArgumentsView().FileTransferArguments.Settings == TransferSettings.DeleteOriginal)
+				{
 					return JobTypeDescription.FileMove;
+				}
 				else
+				{
 					return JobTypeDescription.FileCopy;
+				}
 			}
 
 			throw new ArgumentOutOfRangeException("New JobTypeDescription?");

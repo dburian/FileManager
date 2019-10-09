@@ -1,128 +1,71 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 using System.IO;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace MultithreadedFileOperations
 {
+	/// <summary>
+	/// Operations class contains all operations which MultithreadedFileOperations library offers
+	/// </summary>
 	public static class Operations
 	{
-		//#region Copy
-		//public static void CopyFiles(IEnumerable<FileInfo> sources, DirectoryInfo destinationDirectory)
-		//{
-		//	IEnumerable<(FileInfo, FileInfo)> GenerateCopies()
-		//	{
-		//		foreach (var source in sources)
-		//			yield return (source, new FileInfo(Path.Combine(destinationDirectory.FullName, source.Name)));
-
-		//	}
-
-		//	Task.Run(() => CopyFiles(GenerateCopies()));
-		//}
-		//public static void CopyFiles(IEnumerable<FileInfo> sources, DirectoryInfo destinationDirectory, string namePrefix)
-		//{
-		//	IEnumerable<(FileInfo, FileInfo)> GenerateCopies()
-		//	{
-		//		int counter = 0;
-		//		foreach (var source in sources)
-		//		{
-		//			yield return (source, new FileInfo(Path.Combine(destinationDirectory.FullName, namePrefix + counter)));
-
-		//			counter++;
-		//		}
-		//	}
-
-		//	Task.Run(() => CopyFiles(GenerateCopies()));
-		//}
-		//public static void CopyFiles(IEnumerable<(FileInfo source, FileInfo destination)> copies)
-		//{
-		//	var t = new Task(() => 
-		//	{
-		//		foreach (var copy in copies)
-		//		{
-		//			var cts = new CancellationTokenSource();
-		//			var job = new FileCopyJob(new FileTransferArguments(copy.source, copy.destination), cts.Token);
-
-		//			JobsPool.StartNew(job, cts);
-		//		}
-		//	});
-
-		//	if (TaskScheduler.Current == TaskScheduler.Default)
-		//		t.RunSynchronously();
-		//	else
-		//		t.Start(TaskScheduler.Default);
-		//}
-
-
-		//public static void CopyDirectories(IEnumerable<DirectoryInfo> sources, DirectoryInfo destinationDirectory)
-		//{
-		//	IEnumerable<(DirectoryInfo, DirectoryInfo)> GenerateCopies()
-		//	{
-		//		foreach (var source in sources)
-		//			yield return (source, new DirectoryInfo(Path.Combine(destinationDirectory.FullName, source.Name)));
-		//	}
-
-		//	Task.Run(() => CopyDirectories(GenerateCopies()));
-		//}
-		//public static void CopyDirectories(IEnumerable<DirectoryInfo> sources, DirectoryInfo destinationDirectory, string namePrefix)
-		//{
-		//	string name;
-		//	string extension;
-		//	NameExtensionSplit(namePrefix, out name, out extension);
-
-		//	IEnumerable<(DirectoryInfo, DirectoryInfo)> GenerateCopies()
-		//	{
-		//		int counter = 0;
-		//		foreach (var source in sources)
-		//		{
-		//			yield return (source, new DirectoryInfo(Path.Combine(destinationDirectory.FullName, name + counter + extension)));
-
-		//			counter++;
-		//		}
-		//	}
-
-		//	Task.Run(() => CopyDirectories(GenerateCopies()));
-		//}
-		//public static void CopyDirectories(IEnumerable<(DirectoryInfo source, DirectoryInfo destination)> copies)
-		//{
-		//	var t = new Task(() =>
-		//	{
-		//		foreach(var copy in copies)
-		//		{
-		//			var cts = new CancellationTokenSource();
-		//			var job = new DirectoryCopyJob(new DirectoryTransferArguments(copy.source, copy.destination), cts.Token);
-
-		//			JobsPool.StartNew(job, cts);
-		//		}
-		//	});
-
-		//	if (TaskScheduler.Current == TaskScheduler.Default)
-		//		t.RunSynchronously();
-		//	else
-		//		t.Start(TaskScheduler.Default);
-		//}
-		//#endregion
-
 		#region Transfer
+		/// <summary>
+		/// Transfers files to the destination directory, maintaining the original file names.
+		/// </summary>
+		/// <param name="sources">Files to be transferd</param>
+		/// <param name="destinationDirectory">Destination directory</param>
+		/// <param name="settings">Settings of the transfer</param>
 		public static void TransferFiles(IEnumerable<FileInfo> sources, DirectoryInfo destinationDirectory, TransferSettings settings)
 		{
+			if (sources == null)
+			{
+				throw new ArgumentNullException(nameof(sources));
+			}
+
+			if (destinationDirectory == null)
+			{
+				throw new ArgumentNullException(nameof(destinationDirectory));
+			}
+
 			IEnumerable<(FileInfo, FileInfo)> GenerateMoves()
 			{
 				foreach (var source in sources)
+				{
 					yield return (source, new FileInfo(Path.Combine(destinationDirectory.FullName, source.Name)));
-
+				}
 			}
 
-			Task.Run(() => TransferFiles(GenerateMoves(), settings));
+			TransferFiles(GenerateMoves(), settings);
 		}
+
+		/// <summary>
+		/// Transfers files to the destination directory. Each file gets new name, which is constructed of prefix, a number and a extension.
+		/// </summary>
+		/// <param name="sources">Files to be transfered</param>
+		/// <param name="destinationDirectory">Destination directory</param>
+		/// <param name="namePrefix">Template for destination file names</param>
+		/// <param name="transferSettings">Settings of the transfer</param>
 		public static void TransferFiles(IEnumerable<FileInfo> sources, DirectoryInfo destinationDirectory, string namePrefix, TransferSettings transferSettings)
 		{
-			string name;
-			string extension;
-			NameExtensionSplit(namePrefix, out name, out extension);
+			if (sources == null)
+			{
+				throw new ArgumentNullException(nameof(sources));
+			}
+
+			if (destinationDirectory == null)
+			{
+				throw new ArgumentNullException(nameof(destinationDirectory));
+			}
+
+			if (namePrefix == null)
+			{
+				throw new ArgumentNullException(nameof(namePrefix));
+			}
+
+			NameExtensionSplit(namePrefix, out string name, out string extension);
 
 			IEnumerable<(FileInfo, FileInfo)> GenerateMoves()
 			{
@@ -135,40 +78,83 @@ namespace MultithreadedFileOperations
 				}
 			}
 
-			Task.Run(() => TransferFiles(GenerateMoves(), transferSettings));
+			TransferFiles(GenerateMoves(), transferSettings);
 		}
-		public static void TransferFiles(IEnumerable<(FileInfo source, FileInfo destination)> moves, TransferSettings transferSettings)
+
+		/// <summary>
+		/// Transfers files with provided transfer settings.
+		/// </summary>
+		/// <param name="transfers">Enumerable of tuples, first source, then destination</param>
+		/// <param name="transferSettings">Settings of the trasnfer</param>
+		public static void TransferFiles(IEnumerable<(FileInfo source, FileInfo destination)> transfers, TransferSettings transferSettings)
 		{
-			var t = new Task(() =>
+			if (transfers == null)
 			{
-				foreach (var move in moves)
-				{
-					var cts = new CancellationTokenSource();
-					var job = new FileTransferJob(new FileTransferArguments(move.source, move.destination, transferSettings), cts.Token);
+				throw new ArgumentNullException(nameof(transfers));
+			}
 
-					JobsPool.StartNew(job, cts);
-				}
-			});
+			foreach (var transfer in transfers)
+			{
+				var cts = new CancellationTokenSource();
+				var job = new FileTransferJob(new FileTransferArguments(transfer.source, transfer.destination, transferSettings), cts.Token);
 
-			if (TaskScheduler.Current == TaskScheduler.Default)
-				t.RunSynchronously();
-			else
-				t.Start(TaskScheduler.Default);
+				JobsPool.EnqueueNew(job, cts);
+			}
 		}
 
-
+		/// <summary>
+		/// Transfers directories to the destination directory, maintaining the original directory names.
+		/// </summary>
+		/// <param name="sources">Directories to be transferd</param>
+		/// <param name="destinationDirectory">Destination directory</param>
+		/// <param name="settings">Settings of the transfer</param>
 		public static void TransferDirectories(IEnumerable<DirectoryInfo> sources, DirectoryInfo destinationDirectory, TransferSettings settings)
 		{
+			if (sources == null)
+			{
+				throw new ArgumentNullException(nameof(sources));
+			}
+
+			if (destinationDirectory == null)
+			{
+				throw new ArgumentNullException(nameof(destinationDirectory));
+			}
+
 			IEnumerable<(DirectoryInfo, DirectoryInfo)> GenerateMoves()
 			{
 				foreach (var source in sources)
+				{
 					yield return (source, new DirectoryInfo(Path.Combine(destinationDirectory.FullName, source.Name)));
+				}
 			}
 
-			Task.Run(() => TransferDirectories(GenerateMoves(), settings));
+			TransferDirectories(GenerateMoves(), settings);
 		}
+
+		/// <summary>
+		/// Transfers directories to the destination directory. Each directory gets new name, which is constructed of prefix and a number.
+		/// </summary>
+		/// <param name="sources">Directories to be transfered</param>
+		/// <param name="destinationDirectory">Destination directory</param>
+		/// <param name="namePrefix">Template for destination directory names</param>
+		/// <param name="transferSettings">Settings of the transfer</param>
 		public static void TransferDirectories(IEnumerable<DirectoryInfo> sources, DirectoryInfo destinationDirectory, string namePrefix, TransferSettings settings)
 		{
+			if (sources == null)
+			{
+				throw new ArgumentNullException(nameof(sources));
+			}
+
+			if (destinationDirectory == null)
+			{
+				throw new ArgumentNullException(nameof(destinationDirectory));
+			}
+
+			if (namePrefix == null)
+			{
+				throw new ArgumentNullException(nameof(namePrefix));
+			}
+
 			IEnumerable<(DirectoryInfo, DirectoryInfo)> GenerateMoves()
 			{
 				int counter = 0;
@@ -180,31 +166,44 @@ namespace MultithreadedFileOperations
 				}
 			}
 
-			Task.Run(() => TransferDirectories(GenerateMoves(), settings));
+			TransferDirectories(GenerateMoves(), settings);
 		}
-		public static void TransferDirectories(IEnumerable<(DirectoryInfo source, DirectoryInfo destination)> moves, TransferSettings settings)
+
+		/// <summary>
+		/// Transfers directories with provided transfer settings.
+		/// </summary>
+		/// <param name="transfers">Enumerable of tuples, first source, then destination</param>
+		/// <param name="transferSettings">Settings of the trasnfer</param>
+		public static void TransferDirectories(IEnumerable<(DirectoryInfo source, DirectoryInfo destination)> transfers, TransferSettings settings)
 		{
-			var t = new Task(() =>
+			if (transfers == null)
 			{
-				foreach (var move in moves)
-				{
-					var cts = new CancellationTokenSource();
-					var job = new DirectoryTransferJob(new DirectoryTransferArguments(move.source, move.destination, settings), cts.Token);
+				throw new ArgumentNullException(nameof(transfers));
+			}
 
-					JobsPool.StartNew(job, cts);
-				}
-			});
+			foreach (var transfer in transfers)
+			{
+				var cts = new CancellationTokenSource();
+				var job = new DirectoryTransferJob(new DirectoryTransferArguments(transfer.source, transfer.destination, settings), cts.Token);
 
-			if (TaskScheduler.Current == TaskScheduler.Default)
-				t.RunSynchronously();
-			else
-				t.Start(TaskScheduler.Default);
+				JobsPool.EnqueueNew(job, cts);
+			}
 		}
 		#endregion
-		
+
+
+		/// <summary>
+		/// Deletes provided file system nodes. Non empty directories are also deleted.
+		/// </summary>
+		/// <param name="targets">File system nodes to be deleted</param>
 		public static void DeleteFileSystemNodes(IEnumerable<FileSystemInfo> targets)
 		{
-			void ForEachFileSystemNode(FileSystemInfo target)
+			if (targets == null)
+			{
+				throw new ArgumentNullException(nameof(targets));
+			}
+
+			foreach (var target in targets)
 			{
 				var cts = new CancellationTokenSource();
 
@@ -212,14 +211,15 @@ namespace MultithreadedFileOperations
 					new DeleteJob(new DeleteJobArguments((DirectoryInfo)target, true), cts.Token) :
 					new DeleteJob(new DeleteJobArguments(target), cts.Token);
 
-				JobsPool.StartNew(job, cts);
+				JobsPool.EnqueueNew(job, cts);
 			}
-
-
-			var parallelOptions = new ParallelOptions();
-			parallelOptions.TaskScheduler = TaskScheduler.Default;
-			Parallel.ForEach(targets, parallelOptions, ForEachFileSystemNode);
 		}
+
+		/// <summary>
+		/// Returns view or handle to a search, initialized with provided settings. Search is not started.
+		/// </summary>
+		/// <param name="settings">Search settings</param>
+		/// <returns>View of an initialized search</returns>
 		public static ISearchView SearchFor(SearchSettings settings)
 		{
 			var cts = new CancellationTokenSource();

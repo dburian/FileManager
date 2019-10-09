@@ -1,11 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.IO;
+﻿using System.IO;
 
 namespace MultithreadedFileOperations
 {
-	public struct DirectoryTransferArguments : IJobArguments, ITransferJobArguments
+	/// <summary>
+	/// Encapsulates all the needed information to execute DiretoryTransferJob
+	/// </summary>
+	public struct DirectoryTransferArguments : ITransferJobArguments
 	{
 		public DirectoryTransferArguments(DirectoryInfo from, DirectoryInfo to, TransferSettings settings)
 		{
@@ -18,8 +18,8 @@ namespace MultithreadedFileOperations
 		public DirectoryInfo To { get; }
 		public TransferSettings Settings { get; }
 
-		FileSystemInfo ITransferJobArguments.From { get => From; }
-		FileSystemInfo ITransferJobArguments.To { get => To; }
-		TransferSettings ITransferJobArguments.Settings { get => Settings; }
+		FileSystemInfo ITransferJobArguments.From => From;
+		FileSystemInfo ITransferJobArguments.To => To;
+		TransferSettings ITransferJobArguments.Settings => Settings;
 	}
 }

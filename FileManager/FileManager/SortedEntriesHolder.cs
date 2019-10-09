@@ -1,18 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
-using System.Diagnostics;
 
 namespace FileManager
-{ 
-	class SortedEntriesHolder<EntryType> : EntriesHolder<EntryType> where EntryType: AbstractEntry
+{
+	/// <summary>
+	/// Manages entries with sorting order involved.
+	/// Therefore after each operation, it is necessary to call UpdateView() to propagate the changes to EntriesPane.
+	/// </summary>
+	/// <typeparam name="EntryType">Type of entry.</typeparam>
+	internal class SortedEntriesHolder<EntryType> : EntriesHolder<EntryType> where EntryType : AbstractEntry
 	{
-		Comparison<EntryType> _sortOrder;
+		private Comparison<EntryType> _sortOrder;
 		public SortedEntriesHolder(EntriesPane<EntryType> pane, Comparison<EntryType> sortOrder)
-			:base(pane)
+			: base(pane)
 		{
 			_sortOrder = sortOrder;
 		}
@@ -23,27 +23,35 @@ namespace FileManager
 			set
 			{
 				_sortOrder = value;
-				Update();
+				UpdateView();
 			}
 		}
-		
-		public void Invalidate()
+
+		/// <summary>
+		/// Propagates changes done to the SortedEntriesHolder instance to the underlying EntriesPane.
+		/// </summary>
+		public void UpdateView()
 		{
-			ClearAndReset();
-		}
-		public void Update()
-		{
-			if (Entries.Count <= 0) return;
-			
+			if (Entries.Count <= 0)
+			{
+				return;
+			}
+
 			Entries.Sort(SortOrder);
 			pane.AddEntries(Entries.ToArray());
 
 			EntryInFocusIndex = 0;
 
-			if (!pane.InFocus) EntryInFocus.InFocus = false;	
+			if (!pane.InFocus)
+			{
+				EntryInFocus.InFocus = false;
+			}
 		}
-		
-		void ClearAndReset()
+
+		/// <summary>
+		/// Clears and resets the entries holder.
+		/// </summary>
+		public void ClearAndReset()
 		{
 			//"Invalidate" the pointer to the entry in focus
 			_entryInFocusIndex = -1;

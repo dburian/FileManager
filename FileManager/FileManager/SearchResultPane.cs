@@ -1,21 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Drawing;
-using System.Data;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using MultithreadedFileOperations;
 using System.Windows.Forms;
 
 namespace FileManager
 {
+	/// <summary>
+	/// Displayes search results.
+	/// </summary>
 	public partial class SearchResultPane : EntriesPane<FileSystemNodeEntry>, ISearchResultPane
 	{
-		bool _inFocus;
-		string _searchingName;
-		int _found;
-		JobStatus _status;
+		private bool _inFocus;
+		private string _searchingName;
+		private int _found;
+		private JobStatus _status;
 
 		public SearchResultPane()
 		{
@@ -42,7 +38,8 @@ namespace FileManager
 				{
 					searchingLabel.BackColor = Config.ColorPalette.Black;
 					searchingLabel.ForeColor = Config.ColorPalette.White;
-				}else
+				}
+				else
 				{
 					searchingLabel.BackColor = Config.ColorPalette.White;
 					searchingLabel.ForeColor = Config.ColorPalette.Black;
@@ -70,10 +67,13 @@ namespace FileManager
 		}
 		public string InDirectory
 		{
-			set => searchedDirectoryLabel.Text = value;
+			set => searchedDirectoryLabel.Text = Format.GetCamelCasedPath(value);
 		}
 
 		public override ScrollableControl ViewPanel => searchResultsViewPanel;
-		public override Control GetControl() => this;
+		public override Control GetControl()
+		{
+			return this;
+		}
 	}
 }

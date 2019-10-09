@@ -1,9 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace MultithreadedFileOperations
 {
+	/// <summary>
+	/// Represents different settings of a trasfer (i.e. delete original after transfer, overwrite existing,...)
+	/// </summary>
+	[Flags]
 	public enum TransferSettings
 	{
 		None = 0x0000_0000,

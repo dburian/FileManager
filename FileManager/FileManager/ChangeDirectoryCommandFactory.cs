@@ -1,14 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace FileManager
+﻿namespace FileManager
 {
-	class ChangeDirectoryCommandFactory : ICommandFactory
+	internal class ChangeDirectoryCommandFactory : ICommandFactory
 	{
-		readonly string[] names;
+		private readonly string[] names;
 
 		public ChangeDirectoryCommandFactory()
 		{
@@ -23,8 +17,10 @@ namespace FileManager
 		{
 			parsedCmd = null;
 
-			string[] cmd;
-			if (!CommandParser.ParseWithStrArgs(stringInput, names, out cmd) || cmd.Length != 2) return false;
+			if (!CommandParser.ParseWithStrArgs(stringInput, names, out string[] cmd) || cmd.Length != 2)
+			{
+				return false;
+			}
 
 			parsedCmd = new ChangeDirectoryCommand(cmd[1]);
 

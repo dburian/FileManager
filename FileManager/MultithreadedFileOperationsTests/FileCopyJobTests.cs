@@ -1,13 +1,12 @@
 ﻿#define TEST
 
-using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.IO;
 using MultithreadedFileOperations;
-using System.Diagnostics;
+using System;
+using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Linq;
 
 
 namespace MultithreadedFileOperationsTests
@@ -15,14 +14,19 @@ namespace MultithreadedFileOperationsTests
 	[TestClass]
 	public class FileCopyJobTests
 	{
-		IOTestState state = new IOTestState();
-		
+		private readonly IOTestState state = new IOTestState();
+
 		[TestInitialize]
-		public void BeforeEachTest() => state.Init();
+		public void BeforeEachTest()
+		{
+			state.Init();
+		}
 
 		[TestCleanup]
-		public void AfterEachTest() => state.Cleanup();
-
+		public void AfterEachTest()
+		{
+			state.Cleanup();
+		}
 
 		[TestMethod]
 		public void RunSynchronously()
@@ -30,11 +34,10 @@ namespace MultithreadedFileOperationsTests
 			var ctSource = new CancellationTokenSource();
 			var cpJob = new FileTransferJob(
 				new FileTransferArguments(state.ExistingFiles[0], state.NonExistingFiles[0], TransferSettings.None),
-				ctSource.Token,
-				state.OnExceptionDebugPrint,
 				state.OnProgressDebugPrint
-			);
-			
+,
+				ctSource.Token);
+
 			cpJob.Run();
 
 			state.NonExistingFiles[0].Refresh();
@@ -52,18 +55,17 @@ namespace MultithreadedFileOperationsTests
 			{
 				jobs[i] = new FileTransferJob(
 					new FileTransferArguments(state.ExistingFiles[0], state.NonExistingFiles[i], TransferSettings.None),
-					ctSource.Token,
-					state.OnExceptionDebugPrint,
 					state.OnProgressDebugPrint
-				);
+,
+					ctSource.Token);
 			}
 
 			Task[] jobTasks = new Task[state.NonExistingFiles.Length];
 
 			for (int i = 0; i < state.NonExistingFiles.Length; i++)
+			{
 				jobTasks[i] = Task.Run(jobs[i].Run);
-			
-
+			}
 
 			Task.WaitAll(jobTasks);
 			foreach (var dest in state.NonExistingFiles)
@@ -80,10 +82,9 @@ namespace MultithreadedFileOperationsTests
 			var ctSource = new CancellationTokenSource();
 			var cpJob = new FileTransferJob(
 				new FileTransferArguments(state.NonExistingFiles[0], state.NonExistingFiles[1], TransferSettings.None),
-				ctSource.Token,
-				 state.OnExceptionDebugPrint,
-				 state.OnProgressDebugPrint
-			);
+				state.OnProgressDebugPrint
+,
+				ctSource.Token);
 
 			try
 			{
@@ -107,10 +108,9 @@ namespace MultithreadedFileOperationsTests
 			var ctSource = new CancellationTokenSource();
 			var cpJob = new FileTransferJob(
 				new FileTransferArguments(state.ExistingFiles[0], state.NonExistingFiles[0], TransferSettings.None),
-				ctSource.Token,
-				state.OnExceptionDebugPrint,
 				state.OnProgressDebugPrint
-			);
+,
+				ctSource.Token);
 
 			try
 			{
@@ -135,10 +135,9 @@ namespace MultithreadedFileOperationsTests
 			var ctSource = new CancellationTokenSource();
 			FileTransferJob job = new FileTransferJob(
 				new FileTransferArguments(state.ExistingFiles[0], state.NonExistingFiles[0], TransferSettings.None),
-				ctSource.Token,
-				state.OnExceptionDebugPrint,
 				state.OnProgressDebugPrint
-			);
+,
+				ctSource.Token);
 
 			ctSource.Cancel();
 
@@ -146,7 +145,8 @@ namespace MultithreadedFileOperationsTests
 			try
 			{
 				t.Wait();
-			}catch (AggregateException ea)
+			}
+			catch (AggregateException ea)
 			{
 				threwException = true;
 				Assert.IsTrue(ea.InnerExceptions.All(e => e is OperationCanceledException));
@@ -164,10 +164,9 @@ namespace MultithreadedFileOperationsTests
 			var ctSource = new CancellationTokenSource();
 			FileTransferJob job = new FileTransferJob(
 				new FileTransferArguments(state.ExistingFiles[0], state.NonExistingFiles[0], TransferSettings.None),
-				ctSource.Token,
-				state.OnExceptionDebugPrint,
 				state.OnProgressDebugPrint
-			);
+,
+				ctSource.Token);
 
 			ctSource.Cancel();
 
@@ -194,10 +193,9 @@ namespace MultithreadedFileOperationsTests
 
 			var job = new FileTransferJob(
 				new FileTransferArguments(state.ExistingFiles[0], state.NonExistentFileWithoutRights, TransferSettings.None),
-				cts.Token,
-				state.OnExceptionDebugPrint,
 				state.OnProgressDebugPrint
-			);
+,
+				cts.Token);
 
 			try
 			{
@@ -221,15 +219,15 @@ namespace MultithreadedFileOperationsTests
 				var ctSource = new CancellationTokenSource();
 				var cpJob = new FileTransferJob(
 					new FileTransferArguments(state.ExistingFiles[0], state.NonExistingFiles[0], TransferSettings.None),
-					ctSource.Token,
-					state.OnExceptionDebugPrint,
 					state.OnProgressDebugPrint
-				);
+,
+					ctSource.Token);
 
 				try
 				{
 					cpJob.Run();
-				}catch(FileTransferException e)
+				}
+				catch (FileTransferException e)
 				{
 					state.ExceptionThrown = true;
 					Assert.IsTrue(e.InnerException is IOException);

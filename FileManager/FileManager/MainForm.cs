@@ -1,16 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
-using System.Diagnostics;
+﻿using System.Windows.Forms;
 
 namespace FileManager
 {
+	/// <summary>
+	/// Main and only form of the application.
+	/// </summary>
 	public partial class MainForm : Form, IMainForm
 	{
 		public MainForm()
@@ -40,16 +34,17 @@ namespace FileManager
 				value.Dock = DockStyle.Fill;
 			}
 		}
-		public ICommandPrompt CommandPrompt
+		public ICommandPrompt CommandPrompt => commandPrompt;
+		public bool FullScreenRight
 		{
-			get => commandPrompt;
-		}
-		public bool FullScreenRight {
 			get => splitContainer.Panel1Collapsed;
-			set => splitContainer.Panel1Collapsed = value; }
-		public bool FullScreenLeft {
+			set => splitContainer.Panel1Collapsed = value;
+		}
+		public bool FullScreenLeft
+		{
 			get => splitContainer.Panel2Collapsed;
-			set => splitContainer.Panel2Collapsed = value; }
+			set => splitContainer.Panel2Collapsed = value;
+		}
 
 
 
@@ -102,7 +97,11 @@ namespace FileManager
 				case Keys.Shift:
 				case Keys.Control:
 				case Keys.Alt:
-					if (ProcessKeyPressEvent?.Invoke(new InputKey(keyData)) == true) return true;
+					if (ProcessKeyPressEvent?.Invoke(new InputKey(keyData)) == true)
+					{
+						return true;
+					}
+
 					break;
 
 				default:
@@ -111,12 +110,16 @@ namespace FileManager
 
 			return base.ProcessCmdKey(ref msg, keyData);
 		}
+
 		/// <summary>
 		/// Handler for general key press, should be used for character keys.
 		/// </summary>
-		void ProcessKeyPress(object sender, KeyPressEventArgs e)
+		private void ProcessKeyPress(object sender, KeyPressEventArgs e)
 		{
-			if (ProcessKeyPressEvent?.Invoke(new InputKey(e.KeyChar)) == true) e.Handled = true;
+			if (ProcessKeyPressEvent?.Invoke(new InputKey(e.KeyChar)) == true)
+			{
+				e.Handled = true;
+			}
 		}
 	}
 }

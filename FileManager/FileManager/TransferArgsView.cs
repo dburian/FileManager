@@ -1,20 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Drawing;
-using System.Data;
-using System.Linq;
-using System.Text;
-using System.Threading;
+﻿using MultithreadedFileOperations;
 using System.Windows.Forms;
-using MultithreadedFileOperations;
-using System.Diagnostics;
 
 namespace FileManager
 {
 	public partial class TransferArgsView : UserControl, IJobArgsView
 	{
-		ITransferJobArguments _args;
+		private ITransferJobArguments _args;
 
 		public TransferArgsView()
 		{
@@ -29,7 +20,6 @@ namespace FileManager
 		{
 			InitializeComponent();
 
-			Debug.WriteLine($"Modified: {Thread.CurrentThread.ManagedThreadId}");
 			Args = args;
 		}
 
@@ -38,14 +28,15 @@ namespace FileManager
 			get => _args;
 			set
 			{
-				Debug.WriteLine($"Modified: {Thread.CurrentThread.ManagedThreadId}");
 				_args = value;
 
 				fromArgLabel.Text = Args.From.FullName;
 				toArgLabel.Text = Args.To.FullName;
 			}
 		}
-
-		public Control GetControl() => this;
+		public Control GetControl()
+		{
+			return this;
+		}
 	}
 }
