@@ -4,7 +4,7 @@ using System.IO;
 using System.Security;
 using System.Threading;
 
-namespace MultithreadedFileOperations
+namespace MultithreadedFileSystemOperations
 {
 	/// <summary>
 	/// Search cancelable operation. Searches based on provided SearchSettings.

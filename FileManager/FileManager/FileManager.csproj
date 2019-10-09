@@ -338,9 +338,9 @@
       <Project>{19db1685-535a-4af0-8454-c3c275536638}</Project>
       <Name>HelperExtensionLibrary</Name>
     </ProjectReference>
-    <ProjectReference Include="..\MultithreadedFileOperations\MultithreadedFileOperations.csproj">
+    <ProjectReference Include="..\MultithreadedFileOperations\MultithreadedFileSystemOperations.csproj">
       <Project>{747eed83-bc63-49f8-a04b-9ff3c5633914}</Project>
-      <Name>MultithreadedFileOperations</Name>
+      <Name>MultithreadedFileSystemOperations</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

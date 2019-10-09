@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Threading.Tasks;
 
-namespace MultithreadedFileOperations
+namespace MultithreadedFileSystemOperations
 {
 	/// <summary>
-	/// View (read-only reference) of a search operation.
+	/// Owner handle of a search operation.
 	/// </summary>
-	public interface ISearchView : IDisposable
+	public interface ISearchHandle : IDisposable
 	{
 		SearchSettings Settings { get; }
 		Task ProducerTask { get; }

@@ -2,6 +2,9 @@
 
 namespace FileManager
 {
+	/// <summary>
+	/// Specialization of IPane. View interface to FilesPane.
+	/// </summary>
 	public interface IFilesPane : IPane
 	{
 		DirectoryInfo CurrentDir { get; set; }

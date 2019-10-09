@@ -1,4 +1,4 @@
-﻿using MultithreadedFileOperations;
+﻿using MultithreadedFileSystemOperations;
 using System;
 using System.Diagnostics;
 

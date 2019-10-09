@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace MultithreadedFileOperations
+namespace MultithreadedFileSystemOperations
 {
 	/// <summary>
 	/// Base class for all exeptions in MultithreadedFileOperations library.

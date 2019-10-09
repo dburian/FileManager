@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace MultithreadedFileOperations
+namespace MultithreadedFileSystemOperations
 {
 	public class FileTransferException : FileOperationException
 	{

@@ -1,9 +1,9 @@
 ﻿using System;
 
-namespace MultithreadedFileOperations
+namespace MultithreadedFileSystemOperations
 {
 	/// <summary>
-	/// Representation of an enqueued or running job
+	/// Owner handle of an enqueued or running job.
 	/// </summary>
 	internal interface IJobHandle : IDisposable
 	{

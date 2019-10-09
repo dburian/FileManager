@@ -1,4 +1,4 @@
-﻿namespace MultithreadedFileOperations
+﻿namespace MultithreadedFileSystemOperations
 {
 	/// <summary>
 	/// Possible changes to a job's state.

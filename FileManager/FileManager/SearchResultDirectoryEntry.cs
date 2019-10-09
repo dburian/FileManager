@@ -17,5 +17,16 @@ namespace FileManager
 
 		public override string EntryName => ((DirectoryInfo)Info).GetRelativePath(searchedDirPath);
 
+		private void InitializeComponent()
+		{
+			this.SuspendLayout();
+			// 
+			// SearchResultDirectoryEntry
+			// 
+			this.Name = "SearchResultDirectoryEntry";
+			this.Size = new System.Drawing.Size(380, 18);
+			this.ResumeLayout(false);
+
+		}
 	}
 }

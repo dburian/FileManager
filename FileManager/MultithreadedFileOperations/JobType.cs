@@ -1,4 +1,4 @@
-﻿namespace MultithreadedFileOperations
+﻿namespace MultithreadedFileSystemOperations
 {
 	public enum JobType
 	{

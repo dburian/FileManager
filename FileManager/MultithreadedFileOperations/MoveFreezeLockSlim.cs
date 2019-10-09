@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading;
 
-namespace MultithreadedFileOperations
+namespace MultithreadedFileSystemOperations
 {
 	/// <summary>
 	/// Slim synchronization primitive. Freeze lock rules out moving locks. There can be more threads moving at the same time.

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace MultithreadedFileOperations
+namespace MultithreadedFileSystemOperations
 {
 	public delegate void OnJobsPoolExceptionDelegate(Exception e);
 }

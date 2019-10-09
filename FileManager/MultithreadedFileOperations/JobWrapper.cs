@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading;
 
-namespace MultithreadedFileOperations
+namespace MultithreadedFileSystemOperations
 {
 	/// <summary>
 	/// Wraps raw job and provides additional info, so it can be executed in JobsPool. Is thread safe.
@@ -14,7 +14,6 @@ namespace MultithreadedFileOperations
 		/// Representing the right to dispose this instance
 		/// </summary>
 		private readonly object disposing;
-		private bool _disposed;
 
 		public JobWrapper(Job job, CancellationTokenSource cts, int id)
 		{
@@ -53,7 +52,7 @@ namespace MultithreadedFileOperations
 		/// <summary>
 		/// True if job is already disposed, false otherwise.
 		/// </summary>
-		public bool IsDisposed => _disposed;
+		public bool IsDisposed { get; private set; }
 
 		private CancellationTokenSource Cts { get; }
 		private Job Job { get; }
@@ -66,7 +65,7 @@ namespace MultithreadedFileOperations
 		{
 			lock (disposing)
 			{
-				if (_disposed)
+				if (IsDisposed)
 				{
 					return;
 				}
@@ -75,14 +74,14 @@ namespace MultithreadedFileOperations
 		}
 		public void Dispose()
 		{
-			if (_disposed)
+			if (IsDisposed)
 			{
 				return;
 			}
 
 			Cancel();
 
-			_disposed = true;
+			IsDisposed = true;
 
 			lock (disposing)
 			{
@@ -92,7 +91,7 @@ namespace MultithreadedFileOperations
 
 		public void Run()
 		{
-			if (_disposed)
+			if (IsDisposed)
 			{
 				return;
 			}
@@ -105,7 +104,7 @@ namespace MultithreadedFileOperations
 			}
 			catch (OperationCanceledException e)
 			{
-				if (!_disposed && e.CancellationToken == Cts.Token)
+				if (!IsDisposed && e.CancellationToken == Cts.Token)
 				{
 					LastStatus = JobStatus.Canceled;
 					JobChange?.Invoke(this, JobChangeEvent.Canceled);

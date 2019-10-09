@@ -1,8 +1,9 @@
-﻿using MultithreadedFileOperations;
+﻿using MultithreadedFileSystemOperations;
 using System;
 using System.IO;
 using System.Linq;
 using System.Windows.Forms;
+
 
 namespace FileManager
 {
@@ -17,7 +18,7 @@ namespace FileManager
 		/// <summary>
 		/// Initializes SearchResultPanePresenter and starts the search.
 		/// </summary>
-		public SearchResultPanePresenter(ISearchResultPane pane, ISearchView search)
+		public SearchResultPanePresenter(ISearchResultPane pane, ISearchHandle search)
 		{
 			this.pane = pane;
 			entries = new UnsortedEntriesHolder<FileSystemNodeEntry>((EntriesPane<FileSystemNodeEntry>)pane)
@@ -43,7 +44,7 @@ namespace FileManager
 		public DirectoryInfo SearchedDirectory => Search.Settings.InDirectory;
 		public string SearchedName => Search.Settings.Target.Name;
 
-		private ISearchView Search { get; }
+		private ISearchHandle Search { get; }
 
 		/// <summary>
 		/// Processes key press.

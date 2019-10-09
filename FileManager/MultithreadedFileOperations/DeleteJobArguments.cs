@@ -1,6 +1,6 @@
 ﻿using System.IO;
 
-namespace MultithreadedFileOperations
+namespace MultithreadedFileSystemOperations
 {
 	/// <summary>
 	/// Encapsulates all the needed information to execute DeleteJob.

@@ -1,7 +1,6 @@
 ﻿#define TEST
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using MultithreadedFileOperations;
 using System;
 using System.IO;
 using System.Linq;

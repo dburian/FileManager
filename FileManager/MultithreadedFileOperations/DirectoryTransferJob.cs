@@ -3,7 +3,7 @@ using System.IO;
 using System.Security;
 using System.Threading;
 
-namespace MultithreadedFileOperations
+namespace MultithreadedFileSystemOperations
 {
 	/// <summary>
 	/// Cancelable directory transfer operation.

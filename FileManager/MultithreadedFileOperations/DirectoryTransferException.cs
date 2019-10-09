@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace MultithreadedFileOperations
+namespace MultithreadedFileSystemOperations
 {
 	internal class DirectoryTransferException : FileOperationException
 	{

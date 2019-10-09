@@ -14,5 +14,13 @@ namespace FileManager
 		public override string Message => $"{cmd} can be run only on an active files pane.";
 
 		public string Type => $"Files pane wasn't active";
+
+		internal FullScreenCommandFactory FullScreenCommandFactory
+		{
+			get => default;
+			set
+			{
+			}
+		}
 	}
 }

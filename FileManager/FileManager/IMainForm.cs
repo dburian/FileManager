@@ -2,6 +2,9 @@
 
 namespace FileManager
 {
+	/// <summary>
+	/// View interface to MainForm.
+	/// </summary>
 	internal interface IMainForm
 	{
 		event ProcessKeyPress ProcessKeyPressEvent;

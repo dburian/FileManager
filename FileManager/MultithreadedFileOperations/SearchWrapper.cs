@@ -5,12 +5,12 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MultithreadedFileOperations
+namespace MultithreadedFileSystemOperations
 {
 	/// <summary>
 	/// Search operation execution context.
 	/// </summary>
-	internal class SearchWrapper : ISearchView
+	internal class SearchWrapper : ISearchHandle
 	{
 		private const int MIN_FOUND_BATCH_LENGTH = 1;
 		private const int MAX_FOUND_BATCH_LENGTH = 30 * MIN_FOUND_BATCH_LENGTH;

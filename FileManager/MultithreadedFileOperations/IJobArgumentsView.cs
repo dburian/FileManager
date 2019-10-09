@@ -1,4 +1,4 @@
-﻿namespace MultithreadedFileOperations
+﻿namespace MultithreadedFileSystemOperations
 {
 	/// <summary>
 	/// View (read-only reference) of job's arguments 

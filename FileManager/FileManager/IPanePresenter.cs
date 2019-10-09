@@ -3,6 +3,9 @@ using System.Windows.Forms;
 
 namespace FileManager
 {
+	/// <summary>
+	/// Most basic and general interface to a pane presenter.
+	/// </summary>
 	internal interface IPanePresenter : IDisposable
 	{
 		Control GetViewsControl();

@@ -1,6 +1,6 @@
 ﻿using System.Threading;
 
-namespace MultithreadedFileOperations
+namespace MultithreadedFileSystemOperations
 {
 	/// <summary>
 	/// Represents raw operation and it's execution context.

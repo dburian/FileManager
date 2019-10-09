@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace MultithreadedFileOperations
+namespace MultithreadedFileSystemOperations
 {
 	/// <summary>
 	/// Represents different settings of a trasfer (i.e. delete original after transfer, overwrite existing,...)

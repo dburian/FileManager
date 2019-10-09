@@ -1,6 +1,6 @@
 ﻿using System.IO;
 
-namespace MultithreadedFileOperations
+namespace MultithreadedFileSystemOperations
 {
 	public interface ITransferJobArguments
 	{

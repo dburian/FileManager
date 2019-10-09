@@ -1,4 +1,4 @@
-﻿namespace MultithreadedFileOperations
+﻿namespace MultithreadedFileSystemOperations
 {
 	/// <summary>
 	/// View (read-only interface) of an enqueued or running job.

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 
-namespace MultithreadedFileOperations
+namespace MultithreadedFileSystemOperations
 {
 	/// <summary>
 	/// Represents a file system node which is looked for.

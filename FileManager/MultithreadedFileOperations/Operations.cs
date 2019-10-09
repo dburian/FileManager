@@ -4,7 +4,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MultithreadedFileOperations
+namespace MultithreadedFileSystemOperations
 {
 	/// <summary>
 	/// Operations class contains all operations which MultithreadedFileOperations library offers
@@ -220,7 +220,7 @@ namespace MultithreadedFileOperations
 		/// </summary>
 		/// <param name="settings">Search settings</param>
 		/// <returns>View of an initialized search</returns>
-		public static ISearchView SearchFor(SearchSettings settings)
+		public static ISearchHandle SearchFor(SearchSettings settings)
 		{
 			var cts = new CancellationTokenSource();
 			var search = new FileSystemNodeSearch(settings, cts.Token);

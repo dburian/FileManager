@@ -9,7 +9,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HelperExtensionLibrary", "F
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MultithreadedFileOperationsTests", "MultithreadedFileOperationsTests\MultithreadedFileOperationsTests.csproj", "{70434BBD-8D8F-4040-AC0B-EA7336FFFCB1}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MultithreadedFileOperations", "MultithreadedFileOperations\MultithreadedFileOperations.csproj", "{747EED83-BC63-49F8-A04B-9FF3C5633914}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MultithreadedFileSystemOperations", "MultithreadedFileOperations\MultithreadedFileSystemOperations.csproj", "{747EED83-BC63-49F8-A04B-9FF3C5633914}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -1,4 +1,4 @@
-﻿namespace MultithreadedFileOperations
+﻿namespace MultithreadedFileSystemOperations
 {
 	/// <summary>
 	/// Implementation of visitor pattern. Extracts arguments from a job.

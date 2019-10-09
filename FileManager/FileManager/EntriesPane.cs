@@ -3,7 +3,7 @@
 namespace FileManager
 {
 	/// <summary>
-	/// Base to all the panes which show entries.
+	/// Base class of all panes which show entries.
 	/// </summary>
 	/// <typeparam name="T">Entry type.</typeparam>
 	public abstract class EntriesPane<T> : UserControl, IPane where T : AbstractEntry

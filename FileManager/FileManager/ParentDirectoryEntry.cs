@@ -14,5 +14,16 @@
 			dateTimeLastModifiedLabel.Text = Format.DateAndTime(EntryModified);
 		}
 
+		private void InitializeComponent()
+		{
+			this.SuspendLayout();
+			// 
+			// ParentDirectoryEntry
+			// 
+			this.Name = "ParentDirectoryEntry";
+			this.Size = new System.Drawing.Size(380, 18);
+			this.ResumeLayout(false);
+
+		}
 	}
 }

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 
-namespace MultithreadedFileOperations
+namespace MultithreadedFileSystemOperations
 {
 	internal class FileSystemNodeSearchException : FileOperationException
 	{

@@ -2,6 +2,9 @@
 
 namespace FileManager
 {
+	/// <summary>
+	/// Displays jobs and their state.
+	/// </summary>
 	public partial class JobsPane : EntriesPane<JobEntry>, IJobsPane
 	{
 		private int _inProgress;
