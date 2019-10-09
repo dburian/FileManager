@@ -1,4 +1,5 @@
 ﻿using MultithreadedFileOperations;
+using System.Drawing;
 using System.Windows.Forms;
 
 namespace FileManager
@@ -37,6 +38,15 @@ namespace FileManager
 		public Control GetControl()
 		{
 			return this;
+		}
+
+		public void SetBackgroundColor(Color color)
+		{
+			fromArgLabel.BackColor = color;
+			fromHeaderLabel.BackColor = color;
+			mainTablePanel.BackColor = color;
+			toArgLabel.BackColor = color;
+			toHeaderLabel.BackColor = color;
 		}
 	}
 }

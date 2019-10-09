@@ -11,10 +11,13 @@ namespace FileManager
 		private float _progress;
 		private JobStatus _status;
 		private FileOperationException _exception;
+		private readonly IJobView _jobView;
 
 		public JobEntry(IJobView jobView, JobTypeDescription typeDescription)
 		{
 			InitializeComponent();
+
+			_jobView = jobView;
 
 			EntryType = typeDescription;
 			EntryProgress = jobView.Progress;
@@ -51,6 +54,7 @@ namespace FileManager
 				jobTypeLabel.Text = _type.ToString().ToUpper();
 			}
 		}
+		public IJobView JobView => _jobView;
 		public IJobArgsView EntryArgs
 		{
 			get => _args;
@@ -98,8 +102,9 @@ namespace FileManager
 			jobEntryTablePanel.BackColor = BackColor;
 			jobStatusLabel.BackColor = BackColor;
 			jobTypeLabel.BackColor = BackColor;
+			jobProgressLabel.BackColor = BackColor;
 
-			EntryArgs.GetControl().BackColor = BackColor;
+			EntryArgs.SetBackgroundColor(BackColor);
 		}
 	}
 }

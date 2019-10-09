@@ -442,6 +442,13 @@ namespace FileManager
 			IEnumerable<FileSystemInfo> targets;
 			if (cmd.TargetPath == null)
 			{
+				if (PanePresenterInFocus.GetType() == typeof(JobsPanePresenter))
+				{
+					CancelSelectedJobs((JobsPanePresenter)PanePresenterInFocus);
+					ResetCommandPromptIfNecessary();
+					return;
+				}
+
 				if (!FilesPaneActiveCheck(cmd, out FilesPanePresenter activeFilesPresenter))
 				{
 					return;
@@ -476,6 +483,15 @@ namespace FileManager
 			Task.Run(() => Operations.DeleteFileSystemNodes(targets));
 
 			ResetCommandPromptIfNecessary();
+
+			void CancelSelectedJobs(JobsPanePresenter jobsPresenter)
+			{
+				var jobs = jobsPresenter.GetSelectedJobs();
+				foreach (var job in jobs)
+				{
+					job.Cancel();
+				}
+			}
 		}
 
 		private void HandleSearchCommand(SearchCommand cmd)

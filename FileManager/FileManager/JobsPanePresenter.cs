@@ -1,6 +1,8 @@
-﻿using MultithreadedFileOperations;
+﻿using HelperExtensionLibrary;
+using MultithreadedFileOperations;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -24,10 +26,7 @@ namespace FileManager
 
 			JobsPool.RegisterNewJobsPane(JobChanged, out List<IJobView> views);
 
-			entriesHolder = new UnsortedEntriesHolder<JobEntry>((EntriesPane<JobEntry>)pane)
-			{
-				HighlightingFilter = _ => false
-			};
+			entriesHolder = new UnsortedEntriesHolder<JobEntry>((EntriesPane<JobEntry>)pane);
 
 			JobEntry[] entries = new JobEntry[views.Count];
 			int i = 0;
@@ -65,6 +64,18 @@ namespace FileManager
 		public Control GetViewsControl()
 		{
 			return pane.GetControl();
+		}
+
+		/// <summary>
+		/// Returns selected jobs.
+		/// </summary>
+		public IEnumerable<IJobView> GetSelectedJobs()
+		{
+			var selectedEntries = entriesHolder.SelectedEntries.Count == 0 ?
+				entriesHolder.EntryInFocus.AsSingleEnumerable() :
+				entriesHolder.SelectedEntries;
+
+			return from e in selectedEntries where !e.JobView.IsDisposed select e.JobView;
 		}
 
 		/// <summary>

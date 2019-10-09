@@ -1,4 +1,5 @@
-﻿using System.Windows.Forms;
+﻿using System.Drawing;
+using System.Windows.Forms;
 
 namespace FileManager
 {
@@ -8,5 +9,9 @@ namespace FileManager
 	public interface IJobArgsView
 	{
 		Control GetControl();
+		/// <summary>
+		/// Sets background color of the underlying control to <paramref name="color"/>
+		/// </summary>
+		void SetBackgroundColor(Color color);
 	}
 }

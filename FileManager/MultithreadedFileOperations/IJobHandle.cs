@@ -9,7 +9,7 @@ namespace MultithreadedFileOperations
 	{
 		int Id { get; }
 		JobStatus LastStatus { get; set; }
-		bool Disposed { get; }
+		bool IsDisposed { get; }
 
 		event OnJobChangeDelegate JobChange;
 

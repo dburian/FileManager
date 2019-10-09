@@ -10,6 +10,10 @@ namespace MultithreadedFileOperations
 	{
 		private readonly JobArgumentsVisitor visitor;
 		private float lastProgressReported;
+		/// <summary>
+		/// Representing the right to dispose this instance
+		/// </summary>
+		private readonly object disposing;
 		private bool _disposed;
 
 		public JobWrapper(Job job, CancellationTokenSource cts, int id)
@@ -18,18 +22,38 @@ namespace MultithreadedFileOperations
 			Cts = cts;
 			Id = id;
 
+			disposing = new object();
+
 			Job.ProgressChange += OnJobProgressChange;
 
 			visitor = new JobArgumentsVisitor();
 			Job.Accept(visitor);
 		}
 
+		/// <summary>
+		/// Unique job id.
+		/// </summary>
 		public int Id { get; }
+		/// <summary>
+		/// Last logged job status.
+		/// </summary>
 		public JobStatus LastStatus { get; set; }
+		/// <summary>
+		/// Last exception thrown inside of the job.
+		/// </summary>
 		public FileOperationException Exception { get; private set; }
+		/// <summary>
+		/// Last logged job progress.
+		/// </summary>
 		public float Progress { get; private set; }
+		/// <summary>
+		/// Type of the job.
+		/// </summary>
 		public JobType Type => Job.Type;
-		public bool Disposed => _disposed;
+		/// <summary>
+		/// True if job is already disposed, false otherwise.
+		/// </summary>
+		public bool IsDisposed => _disposed;
 
 		private CancellationTokenSource Cts { get; }
 		private Job Job { get; }
@@ -40,12 +64,14 @@ namespace MultithreadedFileOperations
 
 		public void Cancel()
 		{
-			if (_disposed)
+			lock (disposing)
 			{
-				return;
+				if (_disposed)
+				{
+					return;
+				}
+				Cts.Cancel();
 			}
-
-			Cts.Cancel();
 		}
 		public void Dispose()
 		{
@@ -57,7 +83,11 @@ namespace MultithreadedFileOperations
 			Cancel();
 
 			_disposed = true;
-			Cts.Dispose();
+
+			lock (disposing)
+			{
+				Cts.Dispose();
+			}
 		}
 
 		public void Run()
