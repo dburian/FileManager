@@ -1,6 +1,7 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Diagnostics;
 using System.IO;
+using MultithreadedFileSystemOperations;
 
 namespace MultithreadedFileOperationsTests
 {

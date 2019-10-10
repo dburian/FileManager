@@ -1,12 +1,12 @@
-﻿#define TEST
-
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using MultithreadedFileSystemOperations;
+
 
 namespace MultithreadedFileOperationsTests
 {
