@@ -76,7 +76,6 @@ namespace FileManager
 			{
 				_progress = value;
 
-				Debug.WriteLine($"{JobId}: progress {_progress}");
 				jobProgressLabel.Text = $"{_progress:0.00} %";
 			}
 		}

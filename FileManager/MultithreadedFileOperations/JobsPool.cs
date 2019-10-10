@@ -126,7 +126,6 @@ namespace MultithreadedFileSystemOperations
 
 			jobsLock.ExitMoveLock();                                        //------------ExitLock	
 
-
 			jobHandle.JobChange += OnJobChange;
 
 			queueNonEmpty.Set();
